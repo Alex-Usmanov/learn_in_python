@@ -1,28 +1,8 @@
-# coding:utf-8
+#!/usr/bin/python
+# -*- coding:utf-8 -*-
 '''
 动物标签(sn):象：8、 狮：7、虎：6、豹：5、狼：4、狗：3、猫：2、鼠：1  空：0
 阵营（fraction）：敌我正营，敌为1，我为0
-
-'''
-'''
-class Canvas():
-    def __init__(self, width=7, height=9, clearChar=' ', pixelChar='0'):
-        self.width = width
-        self.height = height
-        self.clearChar = clearChar
-        self.pixelChar = pixelChar
-        self.initCanvas()
-
-    def initCanvas(self):
-        self.canvas = [[self.clearChar] * self.width for i in range(self.height)]
-
-    def display(self):
-        for i in self.canvas:
-            print ''.join(i)
-
-    def drawPixel(self, x, y):
-        # lack of validation
-        self.canvas[y][x] = self.pixelChar
 
 '''
 class Animal():
@@ -184,10 +164,10 @@ class Board():
                 print r
 
     def locate(self,Animal):
-        # dict=[' ','鼠','猫','狗','狼','豹','虎','狮','象']
+        dict=[' ',u'鼠',u'猫',u'狗',u'狼',u'豹',u'虎',u'狮',u'象']
         if Animal.location[0]<9:
-            self.board[Animal.location[1]][Animal.location[0]]=Animal.sn
-            # self.board[Animal.location[1]][Animal.location[0]]=dict[Animal.sn]
+            #self.board[Animal.location[1]][Animal.location[0]]=Animal.sn
+            self.board[Animal.location[1]][Animal.location[0]]=dict[Animal.sn]
 
 
 def game():
