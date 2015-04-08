@@ -26,13 +26,10 @@ class Canvas():
 
 '''
 class Animal():
-    def __init__(self,sn=0,faction=0,location=(9,9)):
+    def __init__(self,sn=0,faction=0,location=[]):
         self.sn=sn                # 标签,序列
         self.faction=faction      # 敌我正营，敌为1，我为0
         self.location=location    # 位置
-
-
-
 
     # 画棋子
     def start(self):
@@ -115,54 +112,63 @@ class Animal():
             self.move()
         else:
             if another.trap() is True:
+                temp_location=self.location
                 self.location=another.location
-                another.location=(9,9)
+                another.sn=0
+                another.location=temp_location
             else:
                 if(self.sn==1 and another.sn==8):
-                    self.location=another.location
-                    another.location=(9,9)
+                    if(0<self.location[0]<3 or 3<self.location[0]<6)and(2<self.location[1]<6):
+                        print("大笨象在河岸上，小老鼠要跳上去才能吃大象哦。")
+                        self.move()
+                    else:
+                        temp_location=self.location
+                        self.location=another.location
+                        another.sn=0
+                        another.location=temp_location
                 elif(self.sn==8 and another.sn==1):
                     print("大笨象，这是老鼠，会钻鼻子里，赶快逃。重新走一步")
                     self.move()
                 elif(self.sn>=another.sn):
+                    temp_location=self.location
                     self.location=another.location
-                    another.location=(9,9)
+                    another.sn=0
+                    another.location=temp_location
                 else:
                     print("笨蛋，你太弱了，吃不了对方。赶快逃命吧。。。")
                     self.move()
 
-
     # 陷入陷阱
     def is_trap(self):
         if self.faction is 0:
-            if self.location==(7,3):
+            if self.location==[7,3]:
                 return True
-            elif self.location==(8,2):
+            elif self.location==[8,2]:
                 return True
-            elif self.location==(8,4):
+            elif self.location==[8,4]:
                 return True
             else:
                 return False
         else:
-            if self.location==(1,3):
+            if self.location==[1,3]:
                 return True
-            elif self.location==(0,2):
+            elif self.location==[0,2]:
                 return True
-            elif self.location==(0,4):
+            elif self.location==[0,4]:
                 return True
             else:
                 return False
 
     # 判定胜利
     def is_win(self):
-        if self.fraction is 0:
-            if self.location==(8.3):
+        if self.faction is 0:
+            if self.location==[8.3]:
                 print("恭喜小伙伴，你成功进驻了敌人的兽穴，你赢了")
                 return 0
             else:
                 return 1
         else:
-            if self.location==(0,3):
+            if self.location==[0,3]:
                 print("对不起，你的兽穴已经被进攻，你输了")
                 return 0
             else:
@@ -170,36 +176,39 @@ class Animal():
 
 class Board():
     def __init__(self):
-        self.board=[[0]*9,[0]*9,[0]*9,[0]*9,[0]*9,[0]*9,[0]*9]
+        # self.board=[[0]*9,[0]*9,[0]*9,[0]*9,[0]*9,[0]*9,[0]*9]
+        self.board=[[0]*7,[0]*7,[0]*7,[0]*7,[0]*7,[0]*7,[0]*7,[0]*7,[0]*7]
 
     def show(self):
         for r in self.board:
-            print r
+                print r
 
     def locate(self,Animal):
+        # dict=[' ','鼠','猫','狗','狼','豹','虎','狮','象']
         if Animal.location[0]<9:
-            self.board[Animal.location[0]][Animal.location[1]]=Animal.sn
+            self.board[Animal.location[1]][Animal.location[0]]=Animal.sn
+            # self.board[Animal.location[1]][Animal.location[0]]=dict[Animal.sn]
 
 
 def game():
     # 初始化棋子的位置数据
-    mouse0=Animal(1,0,(0,2))
-    cat0=Animal(2,0,(2,2))
-    dog0=Animal(3,0,(1,1))
-    wolf0=Animal(4,0,(4,2))
-    leopard0=Animal(5,0,(2,2))
-    tiger0=Animal(6,0,(6,0))
-    lion0=Animal(7,0,(0,0))
-    elephant0=Animal(8,0,(6,2))
+    mouse0=Animal(1,0,[0,2])
+    cat0=Animal(2,0,[2,2])
+    dog0=Animal(3,0,[1,1])
+    wolf0=Animal(4,0,[4,2])
+    leopard0=Animal(5,0,[2,2])
+    tiger0=Animal(6,0,[6,0])
+    lion0=Animal(7,0,[0,0])
+    elephant0=Animal(8,0,[6,2])
 
-    mouse1=Animal(1,1,(6,6))
-    cat1=Animal(2,1,(1,7))
-    dog1=Animal(3,1,(2,6))
-    wolf1=Animal(4,1,(2,2))
-    leopard1=Animal(5,1,(4,6))
-    tiger1=Animal(6,1,(0,8))
-    lion1=Animal(7,1,(6,8))
-    elephant1=Animal(8,1,(0,6))
+    mouse1=Animal(1,1,[6,6])
+    cat1=Animal(2,1,[1,7])
+    dog1=Animal(3,1,[2,6])
+    wolf1=Animal(4,1,[2,2])
+    leopard1=Animal(5,1,[4,6])
+    tiger1=Animal(6,1,[0,8])
+    lion1=Animal(7,1,[6,8])
+    elephant1=Animal(8,1,[0,6])
 
     #target=input()
     goon=1    # 继续标志
