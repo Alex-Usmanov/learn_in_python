@@ -1,9 +1,8 @@
 # coding:utf-8
 _empty_char = '+'
-_default_size = input("please input the size of the chess map : ")
+# _default_size = input("please input the size of the chess map : ")
 
-
-def game_init_board(size=_default_size):
+def game_init_board(size=15):
     board = [['+'] * size for i in range(size)]
     return board
 
@@ -58,19 +57,24 @@ def _diagonal_line1(board, position):
 
 def game_check(board, position):
     x, y = position
-    color = board[x][y]
+    color = board[y][x]
     size = len(board)
     win = color * 5
 
-    horizontal = ''.join(board[x])
-    vertical = ''.join(board[i][y] for i in range(size))
+    horizontal = ''.join(board[y])
+    vertical = ''.join(board[i][x] for i in range(size))
     # diagonal1 = _diagonal_line0(board, position)
     # diagonal2 = _diagonal_line1(board, position)
-    diagonal1=''
-    diagonal2=''
+    mini=min((x+y),size)
+    diagonal1=''.join(board[i][x+y-i] for i in range(mini))
+    if y<=x:
+        diagonal2=''.join(board[i][x+i-y] for i in range(size+y-x))
+        # (0,1)(1,2)(2,3)(3,4)(4,5)
+    else:
+        diagonal2=''.join(board[y-x+i][i] for i in range(size+x-y))
+        # (1,0)(2,1)(3,2)(4,3)(5,4)
 
-    x0 = 0
-    y0 = 0
+    '''
     for hor in board:
         for ver in hor:
             if (x0 + y0)==(x + y):
@@ -84,7 +88,7 @@ def game_check(board, position):
                 diagonal2 = ''.join(board[y0][x0])
             x0 -= 1
         y0 -= 1
-
+    '''
     lines = [horizontal, vertical, diagonal1, diagonal2]
     for i in lines:
         if win in i:
@@ -112,12 +116,10 @@ def game_input():
     except Exception as e:
         return None
 
-
 def game_show_instruction(color):
     print("input: x y ")
     print("example: 8 8")
     print("player: " + color)
-
 
 def main():
     board = game_init_board()
