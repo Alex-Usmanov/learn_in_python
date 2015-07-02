@@ -1,106 +1,78 @@
 # coding:utf-8
-_empty_char = '+'
-# _default_size = input("please input the size of the chess map : ")
 
-def game_init_board(size=15):
-    board = [['+'] * size for i in range(size)]
-    return board
+SIZE=4
+CHESSBOARD=[[0 for col in range(SIZE)] for row in range(SIZE)]
+queens=[]
 
+class Queen():
+    def __init__(self,x,y):
+        self.x=x
+        self.y=y
 
-def game_place_at(board, position, color):
-    size = len(board)
-    x, y = position
-    if 0 <= x < size and 0 <= y < size:
-        # if position[0]<size and position[1]<size:
-        if board[y][x] is _empty_char:
-            board[y][x] = color
+    def queen_attack_area(self,chessboard):
+        # mark chess borad row (x)
+        for i in range(SIZE):
+            chessboard[self.x][i]=1
+            chessboard[i][self.y]=1
+            # chessboard[(self.x+i)%SIZE][(self.y+i)%SIZE]=1
+            # chessboard[(self.x+self.y)%SIZE-i][i]=1
+        if self.x+self.y<SIZE:
+            for i in range(self.x+self.y+1):
+                chessboard[self.x+self.y-i][i]=1
+                # (0,14)(1,13)(2,12)(3,11)(4,10)
         else:
-            return "can't place at this position", position
-    else:
-        return "wrong position."
+            for i in range(self.x+self.y-SIZE+1,SIZE):
+                chessboard[i][self.x+self.y-i]=1
+                # (2,14)(3,13)(4,12)(5,11)(6,10)
 
-def game_check(board, position):
-    x, y = position
-    color = board[y][x]
-    size = len(board)
-    win = color * 5
+        if self.x>self.y:
+            for j in range(SIZE+self.y-self.x):
+                chessboard[self.x+j-self.y][j]=1
+                # (1,0)(2,1)(3,2)(4,3)(5,4)
+        else:
+            for j in range(SIZE+self.x-self.y):
+                chessboard[j][self.y-self.x+j]=1
+                # (0,1)(1,2)(2,3)(3,4)(4,5)
 
-    horizontal = ''.join(board[y])
-    vertical = ''.join(board[i][x] for i in range(size))
+        '''
+        for row in chessboard:
+            print row
+        '''
+        return chessboard
 
-    if x+y<size:
-        diagonal1=''.join(board[i][x+y-i] for i in range(x+y))
-        # (0,14)(1,13)(2,12)(3,11)(4,10)
-    else:
-        diagonal1=''.join(board[x+y-i][i] for i in range(x+y-size+1,size))
-        # (2,14)(3,13)(4,12)(5,11)(6,10)
-        # 如果用diagonal1=''.join(board[x+y-i][i] for i in range(min(x+y,size))) 会溢出
+def print_split_line():
+    print "》"*SIZE*2
 
-    if y<=x:
-        diagonal2=''.join(board[i][x+i-y] for i in range(size+y-x))
-        # (0,1)(1,2)(2,3)(3,4)(4,5)
-    else:
-        diagonal2=''.join(board[y-x+i][i] for i in range(size+x-y))
-        # (1,0)(2,1)(3,2)(4,3)(5,4)11
+def print_chessboard(chessboard):
+    for row in chessboard:
+        print row
 
-    lines = [horizontal, vertical, diagonal1, diagonal2]
-    for i in lines:
-        if win in i:
-            print("__________你赢了，真是太聪明了·(づ￣ 3￣)づ__________")
-            return True
-
-
-def game_over(color):
-    print("胜利者属于 " + color)
+def set_queens(chessborad=CHESSBOARD):
+    for i in range(SIZE):
+        for j in range(SIZE):
+            if not chessborad[i][j]:
+                tempQueen=Queen(i,j)
+                queens.append([i,j])
+                chessborad=tempQueen.queen_attack_area(chessborad)
+                set_queens(chessborad)
+    return queens
 
 
-def game_display(board):
-    size = len(board)
-    print('  ' + ''.join(map(lambda i: str(i).rjust(3), range(size))))
-    for i in range(size):
-        print(str(i).rjust(2) + '  ' + '  '.join(board[i]))
+def test3():
+    set_queens()
+    print queens
 
-def game_input():
-    command = raw_input()
-    try:
-        raw = command.split()
-        position = (int(raw[0]), int(raw[1]))
-        return position
-    except Exception as e:
-        return None
+def test0():
+    q=Queen(6,7)
+    q.queen_attack_area(CHESSBOARD)
+    # chessboard[(self.x+self.y)%SIZE-i][i]=1
 
-def game_show_instruction(color):
-    print("input: x y ")
-    print("example: 8 8")
-    print("player: " + color)
+def test1():
+    q=Queen(1,3)
+    q.queen_attack_area(CHESSBOARD)
 
-def main():
-    board = game_init_board()
-    colors = ['●', '○']
-    player = 0
-    while True:
-        color = colors[player]
-
-        game_display(board)
-        game_show_instruction(color)
-
-        position = game_input()
-        if position is None:
-            continue
-
-        status = game_place_at(board, position, color)
-        if status is not None:
-            print status
-            continue
-
-        if game_check(board, position):
-            game_display(board)
-            game_over(color)
-            break
-
-        player = (player + 1) % 2
-
-if __name__ == '__main__':
-    import sys
-
-    main()
+if __name__=='__main__':
+    # test0()
+    print_split_line()
+    # test1()
+    test3()
