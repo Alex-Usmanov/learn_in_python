@@ -1,0 +1,44 @@
+<!doctype html>
+
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Message Board</title>
+</head>
+
+<body>
+    <!-- view -->
+    <table>
+      <!-- title -->
+      <tr>
+        <th>ID</th>
+        <th>name</th>
+        <th>comment</th>
+        <th>time</th>
+      </tr>
+
+      <!-- contents -->
+    {% if messages %}
+    {% for message in messages %}
+      <tr>
+        <td>{{ message.id }}</td>
+        <td>{{ message.name }}</td>
+        <td>{{ message.comment }}</td>
+        <td>{{ message.timestamp }}</td>
+      </tr>
+    {% endfor %}
+    {% endif %}
+
+    </table>
+
+    <!-- add -->
+    <form action="/bbs" method="post">
+        <label for="name">name</label>
+        <input id="name-id" type="text" size="20" name="name">
+        <label for="comment">comment</label>
+        <textarea id="comment-id" name="comment"></textarea>
+        <button type="submit">post</button>
+    </form>
+</body>
+
+</html>
