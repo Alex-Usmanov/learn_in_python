@@ -86,6 +86,10 @@ def retrieve_password():
     return render_template('retrieve_password.html')
 
 
+@app.route('bbs',methods=['POST','GET'])
+def bbs():
+    return render_template('bbs.html')
+
 if __name__ == '__main__':
     app.debug = True
     app.run()
