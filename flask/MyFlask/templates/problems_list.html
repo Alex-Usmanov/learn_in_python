@@ -1,0 +1,50 @@
+<!doctype html>
+
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Problems list</title>
+</head>
+
+<body>
+<!-- view -->
+<h1>Welcome to the Sea of Problems ~ </h1>
+<hr>
+
+<table>
+    <!-- title -->
+    <!-- contents -->
+    {% if problems %}
+        <!-- {% i=1 %} -->
+        {% for problem in problems %}
+            <tr>
+            <!--
+            <td>{{ problem.id }}</td>
+            -->
+            <!-- <td>{{ i }}</td> -->
+            <td>{{ problem.title }}</td>
+            <td>{{ problem.detail }}</td>
+            <td>{{ problem.creator }}</td>
+            </tr>
+        <!-- {% i=i+1 %} -->
+        {% endfor %}
+    {% endif %}
+
+</table>
+
+<!-- add -->
+<form action="/problems_list" method="post">
+    <label for="problem_title">problem_title</label>
+    <input id="problem_title" type="text" size="20" name="problem_title">
+
+    <label for="problem_detail">problem_detail</label>
+    <textarea id="problem_detail" name="problem_detail"></textarea>
+
+    <label for="problem_creator">creator</label>
+    <textarea id="problem_creator" name="problem_creator"></textarea>
+
+    <button type="submit">post</button>
+</form>
+</body>
+
+</html>
