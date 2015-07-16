@@ -5,6 +5,12 @@ from flask import request
 from flask import render_template
 
 import user
+
+user_db_file = 'user.db.txt'
+message_db_file = 'message.db.txt'
+problem_db_file = 'problem.db.txt'
+
+# 创建一个存取数据的文本文件
 # from user import *
 # 一般说来，应该避免使用from..import而使用import语句，
 # 因为这样可以使你的程序更加易读，也可以避免名称的冲突
@@ -54,6 +60,8 @@ def sign():
         for ur in users:
             if userdata['user_name'] == ur['user_name']:
                 return '<h1> User name already exists </h1>'
+            if len(userdata['user_name']) <= 2:
+                return '<h1> User name should be more than 2 bytes.</h2>'
 
         if userdata['password1'] == userdata['password']:
             del userdata['password1']
@@ -86,9 +94,20 @@ def retrieve_password():
     return render_template('retrieve_password.html')
 
 
-@app.route('bbs',methods=['POST','GET'])
-def bbs():
-    return render_template('bbs.html')
+@app.route('/problems_list', methods=['POST', 'GET'])
+def problems_list():
+    if request.method == 'POST':
+        problem_data = request.form.to_dict()
+        print "problem_data : ", problem_data
+        if len(problem_data["problem_title"]) <= 2:
+            return "<h1>the title should more than 2 bytes </h1>"
+        else:
+            user.save(problem_data, problem_db_file)
+
+            # problems=user.load(problem_db_file)
+
+    return render_template('problems_list.html')
+
 
 if __name__ == '__main__':
     app.debug = True
