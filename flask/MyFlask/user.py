@@ -1,14 +1,16 @@
-# coding:utf-8
+# coding:gbk
 
 import time
 
 
-db_file = 'user.db.txt'
+user_db_file = 'user.db.txt'
+message_db_file = 'message.db.txt'
+problem_db_file = 'problem.db.txt'
 # 创建一个存取数据的文本文件
 
 # load() 打开存取数据的文本文件，然后加载之（返回文件中所有的数据）
-def load():
-    with open(db_file) as f:
+def load(file):
+    with open(file) as f:
         # 用with 打开文件 ,读写模式:r只读,r+读写,w新建(会覆盖原有文件),a追加,b二进制文件.常用模式
         lines = f.readlines()
         messages = [eval(line) for line in lines]
@@ -16,10 +18,11 @@ def load():
         return messages
 
 
-def save(user_data):
-    with open(db_file,'a') as f:
-        f.write(str(user_data)+'\n')
-    # 把用户数据（用户名和密码）追加到 文本后面
+def save(data,file):
+    with open(file, 'a') as f:
+        f.write(str(data) + '\n')
+        # 把用户数据（用户名和密码）追加到 文本后面
+
 
 # 检查用户登录
 def check_login(user_data):
@@ -36,6 +39,6 @@ def check_login(user_data):
 
 
 def equal_password(passwords):
-    return passwords["password1"]==passwords["password2"]
+    return passwords["password1"] == passwords["password2"]
 
-        # 怎样 把注册的页面的用户名和密码传输进数据库文本里？
+    # 怎样 把注册的页面的用户名和密码传输进数据库文本里？
