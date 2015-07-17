@@ -5,23 +5,23 @@
     <title>BBS</title>
 </head>
 <body>
-    <h2> MY SHINY PERIOD </h2>
-    <hr>
-    {% if article %}
-        <div class="passage">
-            {% for passage in article %}
-            <p>article</p>
-            <br>
-            {% endfor%}
-        </div>
-    {% endif %}
+<h2> MY SHINY PERIOD </h2>
+<hr>
+{% if article %}
+<div class="passage">
+    {% for passage in article %}
+    <p>article</p>
+    <br>
+    {% endfor%}
+</div>
+{% endif %}
 
-    <hr>
-    <h6>-- Adventure may hurt you, but monotony will kill you. --</h6>
-    {% if messages %}
-        {% for message in messages %}
-        <label for="name">{{ message.name }}</label>
-    {% }
+<hr>
+<h6>-- Adventure may hurt you, but monotony will kill you. --</h6>
+{% if messages %}
+{% for message in messages %}
+<label for="name">{{ message.name }}</label>
+{% }
 
 
 </body>

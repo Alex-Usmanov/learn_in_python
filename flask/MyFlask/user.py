@@ -1,4 +1,4 @@
-# coding:gbk
+# coding:utf-8
 
 import time
 
@@ -9,7 +9,7 @@ problem_db_file = 'problem.db.txt'
 # 创建一个存取数据的文本文件
 
 # load() 打开存取数据的文本文件，然后加载之（返回文件中所有的数据）
-def load(file):
+def load(file=user_db_file):
     with open(file) as f:
         # 用with 打开文件 ,读写模式:r只读,r+读写,w新建(会覆盖原有文件),a追加,b二进制文件.常用模式
         lines = f.readlines()
@@ -18,7 +18,7 @@ def load(file):
         return messages
 
 
-def save(data,file):
+def save(data,file=user_db_file):
     with open(file, 'a') as f:
         f.write(str(data) + '\n')
         # 把用户数据（用户名和密码）追加到 文本后面
@@ -26,7 +26,7 @@ def save(data,file):
 
 # 检查用户登录
 def check_login(user_data):
-    with open(db_file, 'a') as f:
+    with open(user_db_file, 'a') as f:
         # a以追加模式打开 (从 EOF 开始, 必要时创建新文件)
         # refer more: http://www.cnblogs.com/dkblog/archive/2011/02/24/1980651.html
         lines = f.readline()

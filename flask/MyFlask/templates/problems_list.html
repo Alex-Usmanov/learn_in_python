@@ -8,47 +8,28 @@
 
 <body>
 <!-- view -->
-<h1>Welcome to the Sea of Problems ~ </h1>
+<h1>{{ problem.problem_title }} </h1>
+<br>
+<h6> 发布人：{{ problem.problem_creator }}</h6>
+<br>
+
+<p>{{ problem.problem_detail}} </p>
+<br>
 <hr>
-
-<table>
-    <!-- title -->
-    <!-- contents -->
-    {% if problems %}
-        <tr>
-            <th>题目</th>
-            <th>题目描述</th>
-            <th>发布人</th>
-      </tr>
-        {% for problem in problems %}
-            <tr>
-            <td>{{ problem.problem_title }}</td>
-            <td>{{ problem.problem_detail }}</td>
-            <td>{{ problem.problem_creator }}</td>
-            </tr>
-
-        {% endfor %}
-    {% endif %}
-
-</table>
+<h4> come on,baby ♥ ~ create your solution </h4>
+<br>
 
 <!-- add -->
-<form action="/problems_list" method="post">
-    <label for="problem_title">题目</label>
-    <input id="problem_title" type="text" size="50" name="problem_title" required="required">
+<form action="/problems_list/<problem_id>" method="post">
+    <label for="solution_creator">答题者</label>
+    <input id="solution_creator" type="text" size="50" name="solution_creator" required="required">
     <br>
     <br>
-
-
-    <label for="problem_detail">题目描述</label>
+    <label for="solution_detail">你的答案</label>
     <br>
-    <textarea id="problem_detail" name="problem_detail" cols="80" rows="10"></textarea>
+    <textarea id="solution_detail" name="solution_detail" cols="80" rows="10"></textarea>
     <br>
-    <label for="problem_creator">发布者</label>
-    <input id="problem_creator" name="problem_creator">
     <br>
-
-
     <button type="submit">post</button>
 </form>
 </body>

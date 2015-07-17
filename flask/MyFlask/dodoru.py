@@ -5,14 +5,14 @@ from flask import request
 from flask import render_template
 
 import user
+import problem
 
 user_db_file = 'user.db.txt'
 message_db_file = 'message.db.txt'
 problem_db_file = 'problem.db.txt'
 
 # 创建一个存取数据的文本文件
-# from user import *
-# 一般说来，应该避免使用from..import而使用import语句，
+# from user import
 # 因为这样可以使你的程序更加易读，也可以避免名称的冲突
 app = Flask(__name__)
 
@@ -66,7 +66,7 @@ def sign():
         if userdata['password1'] == userdata['password']:
             del userdata['password1']
             # 两个密码相同，只需要存一个好了，所以把另一个删掉
-            user.save(userdata,user_db_file)
+            user.save(user, user_db_file)
             return '<h1> sign OK </h1>'
         else:
             print "前后密码不匹配，请重新输入密码"
@@ -96,16 +96,43 @@ def retrieve_password():
 
 @app.route('/problems_list', methods=['POST', 'GET'])
 def problems_list():
+    problems_data = user.load(problem_db_file)
+    problems_totality = len(problems_data)
+
     if request.method == 'POST':
         problem_data = request.form.to_dict()
+        problem_id = problems_totality + 1
+        problem_data['problem_id'] = problem_id
+
         print "problem_data : ", problem_data
         if len(problem_data["problem_title"]) <= 2:
             return "<h1>the title should more than 2 bytes </h1>"
         else:
             user.save(problem_data, problem_db_file)
             # problems=user.load(problem_db_file)
-    problems_data=user.load(problem_db_file)
-    return render_template('problems_list.html',problems=problems_data)
+
+    # problems_data=user.load(problem_db_file)
+    return render_template('problems_list.html', problems=problems_data)
+
+
+@app.route('/problem_list/<problem_id>', methods=['POST', 'GET'])
+def create_problem_page(problem_id):
+    if request.method == 'POST':
+        problem_solution = request.form.to_dict()
+        problem_solution["problem_id"] = problem_id
+        # 自动生成 problem_id 条目 放在 字典里
+
+        problem_id_solution_file = 'problem' + str(problem_id) + '.db.txt'
+        # 生成存取这个问题答案的数据文件
+        with open(problem_id_solution_file, 'w') as f:
+            problem.save(problem_solution, problem_id_solution_file)
+
+        print "problem_solution : ", problem_solution
+        # if problem_solution['result']==
+        # 对比 预期答案
+    # problem_data=problem.load_a_problem(problem_id,problem_db_file)
+    problems_data = problem.load(problem_db_file)
+    return render_template('problem_id.html', pro_id=problem_id, problem=problems_data[problem_id - 1])
 
 
 if __name__ == '__main__':
