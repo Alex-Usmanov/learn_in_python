@@ -112,14 +112,13 @@ def problems_list():
             if pro['title'] == problem_data['title']:
                 return "<h1> 这个问题题目已经存在，请重新提问。</h1>"
                 # 应出现提示框 提醒才对
-
         if len(problem_data['title']) <= 2:
             return "<h1>the title should more than 2 bytes </h1>"
         else:
             problem_url = "/problems_list/" + str(problem_id)
             problem_data['url'] = problem_url
             problem.save(problem_data)
-            # problems=user.load(problem_db_file)
+
     problems_data = problem.load()
     # 重新加载一次，这样才能立刻显示出新添加的题目
     return render_template('problems_list.html', problems=problems_data)
@@ -130,35 +129,27 @@ def create_problem_page(problem_id):
     pro_id = problem_id
     problems_data = problem.load()
     problem_data = problems_data[int(pro_id) - 1]
-    # problem_data =problems_data[int(pro_id)] 如果不-1，每次post 后，显示的是下一题的页面
-    '''
+    # problem_data =problems_data[int(pro_id)] 如果不-1，每次post 后，显示的是下一题的页面（感觉可以有妙用
+    ''' 如果id 并不是自动生成排序，就要这样子判断存取了
     for pro in problems_data:
         if pro['id'] == problem_id:
             problem_data = pro
             # break
     '''
-    print problem_data
-
     solutions_data = None
     problem_id_solution_file = 'problem_' + str(pro_id) + '_solution.db.txt'
     # 存取这个问题答案的数据文件名
     if request.method == 'POST':
         problem_solution = request.form.to_dict()
-        problem_solution["problem_id"] = pro_id
-        # 自动生成 problem_id 条目 放在 字典里
-
-        # 生成存取这个问题答案的数据文件
-        with open(problem_id_solution_file, 'a') as fb:
+        problem_solution["problem_id"] = pro_id    # 自动生成 problem_id 条目 放在 字典里
+        # with open(problem_id_solution_file, 'a') as fb:
             # problem.save(problem_solution, fb)
             # 这样会出错，不明白为什么 coercing to Unicode: need string or buffer, file found
-            problem.save(problem_solution, problem_id_solution_file)
-        print "problem_solution : ", problem_solution
-        solutions_data = problem.load(problem_id_solution_file)
+        problem.save(problem_solution, problem_id_solution_file)
 
     if os.path.exists(problem_id_solution_file):
         solutions_data = problem.load(problem_id_solution_file)
-        # 判断是否已经存在 这个文件
-
+        # 判断是否已经存在 这道题的答案文件，如果有就加载 答案
     return render_template('problem_id.html', id=problem_id, problem=problem_data, solutions=solutions_data)
 
 
