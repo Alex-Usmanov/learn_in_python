@@ -18,7 +18,7 @@ def load(file=user_db_file):
         return messages
 
 
-def save(data,file=user_db_file):
+def save(data, file=user_db_file):
     with open(file, 'a') as f:
         f.write(str(data) + '\n')
         # 把用户数据（用户名和密码）追加到 文本后面

@@ -3,33 +3,51 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Problems list</title>
+    <title>题库</title>
 </head>
 
 <body>
 <!-- view -->
-<h1>{{ problem.problem_title }} </h1>
-<br>
-<h6> 发布人：{{ problem.problem_creator }}</h6>
-<br>
-
-<p>{{ problem.problem_detail}} </p>
-<br>
+<h1> Swimming in the Sea of Problems </h1>
 <hr>
-<h4> come on,baby ♥ ~ create your solution </h4>
-<br>
+
+<table>
+    <!-- title -->
+    <!-- contents -->
+    {% if problems %}
+    <tr>
+        <th>#</th>
+        <th>题目</th>
+        <th>题目描述</th>
+        <th>发布人</th>
+    </tr>
+    {% for problem in problems %}
+    <tr>
+        <td>{{ problem.id }}</td>
+        <td><a href={{ problem.url }}>{{ problem.title }}</a></td>
+        <td>{{ problem.detail }}</td>
+        <td>{{ problem.creator }}</td>
+    </tr>
+
+    {% endfor %}
+    {% endif %}
+
+</table>
 
 <!-- add -->
-<form action="/problems_list/<problem_id>" method="post">
-    <label for="solution_creator">答题者</label>
-    <input id="solution_creator" type="text" size="50" name="solution_creator" required="required">
+<form action="/problems_list" method="post">
+    <label for="problem_title">题目</label>
+    <input id="problem_title" type="text" size="50" name="title" required="required">
     <br>
     <br>
-    <label for="solution_detail">你的答案</label>
+    <label for="problem_detail">题目描述</label>
     <br>
-    <textarea id="solution_detail" name="solution_detail" cols="80" rows="10"></textarea>
+    <textarea id="problem_detail" name="detail" cols="80" rows="10"></textarea>
     <br>
+    <label for="problem_creator">发布者</label>
+    <input id="problem_creator" name="creator">
     <br>
+
     <button type="submit">post</button>
 </form>
 </body>
