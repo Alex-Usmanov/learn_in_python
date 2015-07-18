@@ -139,8 +139,8 @@ def create_problem_page(problem_id):
     '''
     print problem_data
 
-    solutions_data=None
-    problem_id_solution_file='problem_' + str(pro_id) + '_solution.db.txt'
+    solutions_data = None
+    problem_id_solution_file = 'problem_' + str(pro_id) + '_solution.db.txt'
     # 存取这个问题答案的数据文件名
     if request.method == 'POST':
         problem_solution = request.form.to_dict()
@@ -151,7 +151,7 @@ def create_problem_page(problem_id):
         with open(problem_id_solution_file, 'a') as fb:
             # problem.save(problem_solution, fb)
             # 这样会出错，不明白为什么 coercing to Unicode: need string or buffer, file found
-            problem.save(problem_solution,problem_id_solution_file)
+            problem.save(problem_solution, problem_id_solution_file)
         print "problem_solution : ", problem_solution
         solutions_data = problem.load(problem_id_solution_file)
         # if problem_solution['result']==

@@ -20,13 +20,13 @@
 <hr color="111">
 
 {% if solutions %}
-    {% for solution in solutions %}
-        <p>{{ solution.creator }}</p>
+{% for solution in solutions %}
+<p>{{ solution.creator }}</p>
 
-        <article>&nbsp;&nbsp;&nbsp;&nbsp;{{ solution.detail }}</article>
+<article>&nbsp;&nbsp;&nbsp;&nbsp;{{ solution.detail }}</article>
 
-      <hr>
-    {% endfor %}
+<hr>
+{% endfor %}
 {% endif %}
 
 <h3> come on,baby ♥ ~ create your solution </h3>
