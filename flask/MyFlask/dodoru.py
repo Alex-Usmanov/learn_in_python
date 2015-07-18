@@ -154,11 +154,10 @@ def create_problem_page(problem_id):
             problem.save(problem_solution, problem_id_solution_file)
         print "problem_solution : ", problem_solution
         solutions_data = problem.load(problem_id_solution_file)
-        # if problem_solution['result']==
-        # 对比 预期答案
 
     if os.path.exists(problem_id_solution_file):
         solutions_data = problem.load(problem_id_solution_file)
+        # 判断是否已经存在 这个文件
 
     return render_template('problem_id.html', id=problem_id, problem=problem_data, solutions=solutions_data)
 
