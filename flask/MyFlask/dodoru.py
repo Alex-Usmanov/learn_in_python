@@ -3,6 +3,9 @@
 from flask import Flask
 from flask import request
 from flask import render_template
+
+import flask
+
 import os
 
 import user
@@ -20,8 +23,9 @@ app = Flask(__name__)
 
 @app.route('/')
 def index():
+    name = request.cookies.get('username')
     # return '<a href="/login">LOGIN</a> &nbsp&nbsp&nbsp&nbsp <a href="/sign">SIGN</a>'
-    return render_template('index.html')
+    return render_template('index.html', username=name)
 
 
 @app.route('/login', methods=['POST', 'GET'])
@@ -34,13 +38,14 @@ def login():
         users = user.load()
         for ur in users:
             # if userdata['user_name'] == u['user_name'] and userdata['password'] == u['password1']:
-            # 瓜 原来没有对 对password 提出校验的需求，所以用户的数据信息是直接存进去两次输入的密码
-            # 所以，这里登陆以第一次输入的密码 password1 为主（key）
             if userdata['name'] == ur["name"]:
                 # user_exist=True
                 if userdata['password'] == ur['password']:
                     print "login ok.\(^o^)/"
-                    return '<h1>login ok</h1>'
+                    # set cookies
+                    response = flask.make_response(flask.redirect(flask.url_for('problems')))
+                    response.set_cookie('username', ur['name'])
+                    return response
                 else:
                     return '<h1> password is not suit for the username. </h1>'
                     # 因为这里返回去查看是否存在用户名没多大用处，所以一般网站都只是显示“用户名和密码不匹配”
@@ -79,6 +84,29 @@ def sign():
 # @app.route('/user/<name>')
 # def user(name):
 # return render_template('user.html')
+
+@app.route('/settings/<name>', methods=['POST', 'GET'])
+def settings(name):
+    username = request.cookies.get('username')
+
+    if username == name:
+        users_data = user.load()
+        url = '/settings/' + str(name)
+        if request.method == 'POST':
+            user_passwords = request.form.to_dict()
+            if user_passwords['password1'] == user_passwords['password2']:
+                for ur in users_data:
+                    if ur['name'] == name:
+                        ur['password'] = user_passwords['password1']
+                        user.cover(users_data)
+                        return '<h1> 密码更改成功<h2>'
+
+        return render_template('settings.html', action_url=url)
+    else:
+        return flask.redirect(flask.url_for('/login'))
+        # 必须是当前用户才可以修改密码,如果不是就要重新登陆
+
+
 @app.route('/retrieve_password', methods=['POST', 'GET'])
 def retrieve_password():
     if request.method == 'POST':
@@ -96,8 +124,14 @@ def retrieve_password():
     return render_template('retrieve_password.html')
 
 
-@app.route('/problems_list', methods=['POST', 'GET'])
-def problems_list():
+@app.route('/problems', methods=['POST', 'GET'])
+def problems():
+    # redirect to login page if no cookie
+    username = request.cookies.get('username')
+    if username is None:
+        # FIXME, 注意这个url_for的参数是这个文件中出现的函数名比如 def index 这个index
+        return flask.redirect(flask.url_for('login'))
+
     problems_data = problem.load()
     problems_totality = len(problems_data)
 
@@ -115,7 +149,7 @@ def problems_list():
         if len(problem_data['title']) <= 2:
             return "<h1>the title should more than 2 bytes </h1>"
         else:
-            problem_url = "/problems_list/" + str(problem_id)
+            problem_url = "/problems/" + str(problem_id)
             problem_data['url'] = problem_url
             problem.save(problem_data)
 
@@ -124,34 +158,51 @@ def problems_list():
     return render_template('problems_list.html', problems=problems_data)
 
 
-@app.route('/problems_list/<problem_id>', methods=['POST', 'GET'])
-def create_problem_page(problem_id):
-    pro_id = problem_id
+@app.route('/problems/<problem_id>', methods=['POST', 'GET'])
+def problem_subpage(problem_id):
+    # def create_problem_page(problem_id):
+    # FIXME， 这个函数名字取得太烂了，应该叫problem
+    # 另外id不对的时候应该abort(404)
+    # 树： 然而如果叫problem 就会和 problem.py 命名冲突
     problems_data = problem.load()
-    problem_data = problems_data[int(pro_id) - 1]
-    # problem_data =problems_data[int(pro_id)] 如果不-1，每次post 后，显示的是下一题的页面（感觉可以有妙用
+    if int(problem_id) > len(problems_data):
+        print len(problems_data)
+        return '<h1> 没有这道题 <h1>', 404
+
+    problem_data = problems_data[int(problem_id) - 1]
+    # 如果不 problem_id -1，每次post 后，显示的是下一题的页面（感觉可以有妙用
     ''' 如果id 并不是自动生成排序，就要这样子判断存取了
     for pro in problems_data:
         if pro['id'] == problem_id:
             problem_data = pro
             # break
     '''
+    if request.method == 'POST':
+        solution_data = request.form.to_dict()
+        solution_data["problem_id"] = problem_id
+        problem.save_solution_db_file(problem_id, solution_data)
+    solutions_data = problem.load_solution_db_file(problem_id)
+    return render_template('problem_id.html', id=problem_id, problem=problem_data, solutions=solutions_data)
+    # FIXME, model 的内容不应该放到C 里面来搞
+    # 这里根本没必要知道这个数据库存在哪里
+
+
+'''
     solutions_data = None
     problem_id_solution_file = 'problem_' + str(pro_id) + '_solution.db.txt'
     # 存取这个问题答案的数据文件名
     if request.method == 'POST':
         problem_solution = request.form.to_dict()
         problem_solution["problem_id"] = pro_id    # 自动生成 problem_id 条目 放在 字典里
-        # with open(problem_id_solution_file, 'a') as fb:
-            # problem.save(problem_solution, fb)
-            # 这样会出错，不明白为什么 coercing to Unicode: need string or buffer, file found
-        problem.save(problem_solution, problem_id_solution_file)
+        problem.save(problem_solution,problem_id_solution_file) #后来改了，不能用了
+    '''
+# return render_template('problem_id.html', id=problem_id, problem=problem_data, solutions=solutions_data)
 
-    if os.path.exists(problem_id_solution_file):
-        solutions_data = problem.load(problem_id_solution_file)
-        # 判断是否已经存在 这道题的答案文件，如果有就加载 答案
-    return render_template('problem_id.html', id=problem_id, problem=problem_data, solutions=solutions_data)
-
+'''
+@app.errolhandler(404)
+def page_not_found():
+    return "<h1>page not found</h1>",404
+'''
 
 if __name__ == '__main__':
     app.debug = True

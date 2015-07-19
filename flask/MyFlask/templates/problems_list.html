@@ -18,14 +18,18 @@
     <tr>
         <th>#</th>
         <th>题目</th>
+        {#
         <th>题目描述</th>
+        #}
         <th>发布人</th>
     </tr>
     {% for problem in problems %}
     <tr>
         <td>{{ problem.id }}</td>
         <td><a href={{ problem.url }}>{{ problem.title }}</a></td>
+        {#
         <td>{{ problem.detail }}</td>
+        #}
         <td>{{ problem.creator }}</td>
     </tr>
 
