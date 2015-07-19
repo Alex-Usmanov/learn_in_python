@@ -1,0 +1,3 @@
+{'password': u'gua', 'name': u'gua', 'email': u'gua@email.com'}
+{'password': u'test', 'name': u'dodoru', 'email': u'dodoru@gmail.com'}
+{'password': u'dddd', 'name': u'dddd', 'email': u'dddd'}
