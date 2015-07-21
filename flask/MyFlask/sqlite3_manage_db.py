@@ -11,7 +11,7 @@ conn = sqlite3.connect(filepath)
 # if the file path is not exist,throw exception :unable to open database file
 c = conn.cursor()
 
-"""
+"""  # if the table has exist,can not be create again
 c.execute('''CREATE TABLE user(
     id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
     username TEXT NOT NULL UNIQUE CHECK(length(username) >= 2 AND length(username <= 30)),
@@ -19,14 +19,18 @@ c.execute('''CREATE TABLE user(
     email TEXT,
     timestamp INTEGER DEFAULT (DATETIME('now'))
     )''')
-# if the table has exist,can not be create
 """
-
 # c.execute("INSERT into user (username,password,email) values ('foo','pwd','a@b.c')")
 # can not be execute again,because the username must be unique
 # c.execute("INSERT into user (username,password,email) values ('dodoru','dodoru','do@do.c')")
-a = c.execute("SELECT * from user where username='dodoru';")
-print a
+c.execute("UPDATE user SET username='fish' where username='dodoru';")
+# 修改
+c.execute("DELETE from user WHERE username='foo';")
+# 删除
+a = c.execute("SELECT user.id from user where username='fish';")
+b = c.execute("SELECT * from user where username='dodoru';")
+# 查询
+print a, b
 # <sqlite3.Cursor object at 0x0000000002806B20>
 conn.commit()
 conn.close()

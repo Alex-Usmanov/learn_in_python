@@ -7,11 +7,11 @@ _db_directory = 'sqlite3_db_files'
 db_file = 'user_info.db'
 db_file_path = os.path.join(_db_directory, db_file)
 
-"""
-conn = sqlite3.connect(filepath)
+conn = sqlite3.connect(db_file_path)
 # if the file path is not exist,throw exception :unable to open database file
 c = conn.cursor()
-
+"""
+# INIT db table
 c.execute('''CREATE TABLE user(
     id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
     username TEXT NOT NULL UNIQUE CHECK(length(username) >= 2 AND length(username <= 30)),
@@ -50,38 +50,45 @@ def load(file=db_file_path):
     return usersdata
 
 
-def save(*args):
+def save(user_dict):
     conn = sqlite3.connect(db_file_path)
     cu = conn.cursor()
-    cu.execute("INSERT INTO user (username,password,email) values " + str(args))
+    # cu.execute("INSERT INTO user (username,password,email) values " + str(tuple(user_dict.values()))
+    cu.execute("INSERT INTO user " + str(tuple(user_dict.keys())) + " VALUES " + str(tuple(user_dict.values())))
     conn.commit()
     conn.close()
 
 
-def update(id, user_dict):
+def update(user_id, user_dict):
     conn = sqlite3.connect(db_file_path)
     cu = conn.cursor()
-    user_phrase=((str(user_dict).replace(':','=')).replace('{','')).replace('}','')
-    cu.execute("UPDATE user "
-               "SET " + user_phrase+
-               " WHERE id =" + str(id))
+    user_phrase = ((str(user_dict).replace(':', '=')).replace('{', '')).replace('}', '')
+    print user_phrase
+
+    update_sentence = "UPDATE user SET " + user_phrase + " WHERE id =" + str(user_id) + ';'
+    print "update_sentence :", update_sentence
+    cu.execute("UPDATE user SET " + user_phrase + " WHERE id =" + str(user_id) + ';')
     '''
-    cu.execute("UPDATE user "
-               "SET " + str(tuple(user_dict.keys())) +
+    cu.execute("UPDATE user SET " + str(tuple(user_dict.keys())) +
                " VALUES " + str(tuple(user_dict.values())) +
                "WHERE id =" + str(id))
     '''
+    conn.commit()
     conn.close()
 
-def delete(id):
-    conn=sqlite3.connect(db_file_path)
-    cu=conn.cursor
-    cu.execute("DELETE FROM user WHERE id ="+str(id))
 
-def search_id(id):
+def delete(user_id):
     conn = sqlite3.connect(db_file_path)
     cu = conn.cursor()
-    data_index = cu.execute("SELECT * From user where id =" + str(id))
+    cu.execute("DELETE FROM user WHERE id = " + str(user_id))
+    conn.commit()
+    conn.close()
+
+
+def search_id(user_id):
+    conn = sqlite3.connect(db_file_path)
+    cu = conn.cursor()
+    data_index = cu.execute("SELECT * From user where id =" + str(user_id))
     userdata = data_index.fetchall()
     print userdata
     conn.close()
@@ -90,9 +97,18 @@ def search_id(id):
 
 if __name__ == "__main__":
     load()
-    save('testname', 'test', 'test@test.com')
+    # save('testname','test', 'test@test.com')
+    # save({'username':'tree','password':'tree','email':'tree@admin.com'})
     load()
     search_id(3)
+    search_id(9)
+    update(3, {'password': '123456789'})
+    search_id(3)
+    search_id(4)
+    delete(4)
+    search_id(4)
+    delete(4)
+    search_id(4)
 
     '''
     import db
