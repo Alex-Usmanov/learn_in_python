@@ -102,7 +102,7 @@ def search_id(user_id):
 if __name__ == "__main__":
     load()
     # save('testname','test', 'test@test.com')
-    # save({'username':'tree','password':'tree','email':'tree@admin.com'})
+    # save({'username':'admin','password':'admin','email':'admin@admin.com'})
     load()
     search_id(3)
     search_id(9)

@@ -37,19 +37,18 @@ def login():
         # 这里可以调试debug 的时候看看有没有正确把login 里面的用户信息传送进来
         users = user.load()
         for ur in users:
-            # if userdata['user_name'] == u['user_name'] and userdata['password'] == u['password1']:
-            if userdata['name'] == ur["name"]:
-                # user_exist=True
-                if userdata['password'] == ur['password']:
+            # if userdata['name'] == ur["name"] and userdata['password']== ur['password']:
+            if ur[1] == userdata['name']:
+                if ur[2] == userdata['password']:
                     print "login ok.\(^o^)/"
                     # set cookies
-                    response = flask.make_response(flask.redirect(flask.url_for('problems')))
-                    response.set_cookie('username', ur['name'])
+                    # response = flask.make_response(flask.redirect(flask.url_for('problems')))
+                    # response.set_cookie('username', ur['name'])
+                    response = flask.make_response(flask.redirect(flask.url_for('index')))
+                    response.set_cookie('username', ur[1])
                     return response
                 else:
                     return '<h1> password is not suit for the username. </h1>'
-                    # 因为这里返回去查看是否存在用户名没多大用处，所以一般网站都只是显示“用户名和密码不匹配”
-                    # 当然，可以设置一个 user_exist 来判定是否存在该用户
     return render_template('login.html')
 
 
@@ -63,7 +62,8 @@ def sign():
         # users = user.load(user_db_file)
         users = user.load()
         for ur in users:
-            if userdata['name'] == ur['name']:
+            # if userdata['username'] == ur['name']:
+            if userdata['username'] == ur[1]:
                 return '<h1> User name already exists </h1>'
             if len(userdata['name']) <= 2:
                 return '<h1> User name should be more than 2 bytes.</h2>'
@@ -100,7 +100,7 @@ def settings(name):
                         ur['password'] = user_passwords['password1']
                         user.cover(users_data)
                         return '<h1> 密码更改成功<h2>'
-
+                        # FIXME user
         return render_template('settings.html', action_url=url)
     else:
         return flask.redirect(flask.url_for('/login'))
@@ -122,6 +122,9 @@ def retrieve_password():
                 return "<h1> OK~ ,已经将密码发到你注册的邮箱</h1>"
         return "<h1> 咦？ 这个邮箱还没有注册耶~ ... <br>  come on ，baby  ❤ ~ </h1>"
     return render_template('retrieve_password.html')
+
+
+# FIXME user
 
 
 @app.route('/problems', methods=['POST', 'GET'])
@@ -193,7 +196,7 @@ def problem_subpage(problem_id):
 def add_user():
     username = request.cookies.get('username')
     if username == 'admin':
-        if request.methods == 'POST':
+        if request.method == 'POST':
             userdata = request.form.to_dict()
             if userdata['password'] == userdata['password1']:
                 del userdata['password1']
@@ -237,7 +240,7 @@ def edit_user(id):
     username = request.cookies.get('username')
     if username == 'admin':
         if user.search_id(id):
-            if request.methods == 'POST':
+            if request.method == 'POST':
                 user_data = request.form.to_dict()
                 user.update(id, user_data)
                 users_data = user.load()
