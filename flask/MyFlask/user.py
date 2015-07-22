@@ -65,9 +65,11 @@ def update(user_id, user_dict):
     user_phrase = ((str(user_dict).replace(':', '=')).replace('{', '')).replace('}', '')
     print user_phrase
 
-    update_sentence = "UPDATE user SET " + user_phrase + " WHERE id =" + str(user_id) + ';'
-    print "update_sentence :", update_sentence
-    cu.execute("UPDATE user SET " + user_phrase + " WHERE id =" + str(user_id) + ';')
+    # update_sentence = "UPDATE user SET " + user_phrase + " WHERE id =" + str(user_id) + ';'
+    # print "update_sentence :", update_sentence
+    cu.execute("UPDATE user SET " + user_phrase + " WHERE id =" + str(user_id))
+    # FIXME， cu.execute("UPDATE user SET " + user_phrase + " WHERE id = ? ", user_id)
+    # WHY 用问号可以防注入？
     '''
     cu.execute("UPDATE user SET " + str(tuple(user_dict.keys())) +
                " VALUES " + str(tuple(user_dict.values())) +
@@ -81,6 +83,7 @@ def delete(user_id):
     conn = sqlite3.connect(db_file_path)
     cu = conn.cursor()
     cu.execute("DELETE FROM user WHERE id = " + str(user_id))
+    # FIXME，cu.execute("DELETE FROM user WHERE id = ? ;",id)
     conn.commit()
     conn.close()
 
@@ -89,6 +92,7 @@ def search_id(user_id):
     conn = sqlite3.connect(db_file_path)
     cu = conn.cursor()
     data_index = cu.execute("SELECT * From user where id =" + str(user_id))
+    # FIXME ,data_index=cu.execute("SELECT * FROM user WHERE id = ? ",user_id)
     userdata = data_index.fetchall()
     print userdata
     conn.close()

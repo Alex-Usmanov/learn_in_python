@@ -90,3 +90,8 @@ def delete_user(id):
         return render_template('user_list.html')
     else:
         return "<h1> 当前用户无权限查看该页面</h1>"
+
+
+if __name__ == '__main__':
+    app.debug = True
+    app.run()
