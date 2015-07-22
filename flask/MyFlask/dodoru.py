@@ -183,20 +183,89 @@ def problem_subpage(problem_id):
         problem.save_solution_db_file(problem_id, solution_data)
     solutions_data = problem.load_solution_db_file(problem_id)
     return render_template('problem_id.html', id=problem_id, problem=problem_data, solutions=solutions_data)
-    # FIXME, model 的内容不应该放到C 里面来搞
+    # FIXME, model 的内容不应该放到C 里面来搞  OK
     # 这里根本没必要知道这个数据库存在哪里
 
 
+# 添加一个新用户
+# only admin can operate other users information
+@app.route('/user/add', methods=['POST', 'GET'])
+def add_user():
+    username = request.cookies.get('username')
+    if username == 'admin':
+        if request.methods == 'POST':
+            userdata = request.form.to_dict()
+            if userdata['password'] == userdata['password1']:
+                del userdata['password1']
+                user.save(userdata)
+                print "add user OK : ", userdata
+
+                usersdata = user.load()
+                return render_template('user_list.html', users_info=usersdata)
+                # FIXME 添加成功后，进入 user_list 页面，查看资料
+            else:
+                return render_template('user_add.html', tips="<h1>输入密码前后不一致，请重新设置</h1>")
+        return render_template('user_add.html')
+    # return flask.redirect(flask.url_for('login'))
+    return "<h1> 当前用户无权限查看该页面</h1>"
+
+
+# /user/list
+# 显示所有用户，以 table 的形式，带有 th 标签（表格头）
+# 这个页面每个 条目 的最右边有一个 edit 超链接，点击跳转到 edit 页面
+@app.route('/user/list', methods=['POST', 'GET'])
+def user_list():
+    username = request.cookies.get('username')
+    if username == 'admin':
+        usersdata = user.load()
+        return render_template('user_list.html', users_info=usersdata)
+    else:
+        return "<h1> 当前用户无权限查看该页面</h1>"
+
+
 '''
-    solutions_data = None
-    problem_id_solution_file = 'problem_' + str(pro_id) + '_solution.db.txt'
-    # 存取这个问题答案的数据文件名
-    if request.method == 'POST':
-        problem_solution = request.form.to_dict()
-        problem_solution["problem_id"] = pro_id    # 自动生成 problem_id 条目 放在 字典里
-        problem.save(problem_solution,problem_id_solution_file) #后来改了，不能用了
-    '''
-# return render_template('problem_id.html', id=problem_id, problem=problem_data, solutions=solutions_data)
+/user/edit/<id>
+    编辑这个用户的资料（就是密码和 email 可以编辑）
+    这个页面由 list 页面跳转而来，id不存在（如果手动输入一个不存在的id）就404
+    成功后跳转到 list 页面
+    失败后停留在这个页面
+'''
+
+
+@app.route('/user/edit/<id>', methods=['POST', 'GET'])
+def edit_user(id):
+    username = request.cookies.get('username')
+    if username == 'admin':
+        if user.search_id(id):
+            if request.methods == 'POST':
+                user_data = request.form.to_dict()
+                user.update(id, user_data)
+                users_data = user.load()
+
+                return render_template('user_list.html', users_info=users_data)
+        return render_template('user_edit.html')
+    else:
+        return "<h1> 当前用户无权限查看该页面</h1>"
+
+
+'''
+/user/delete/<id>
+    删除这个用户
+    成功后跳转到 list 页面
+    失败后也跳转到 list 页面（一般不会失败，所以先不管）
+#  绝对黑魔法
+'''
+
+
+@app.route('/user/delete/<id>', methods=['POST', 'GET'])
+def delete_user(id):
+    username = request.cookies.get('username')
+    if username == 'admin':
+        print 'delete user data : ', user.search_id(id)
+        user.delete(id)
+        return render_template('user_list.html')
+    else:
+        return "<h1> 当前用户无权限查看该页面</h1>"
 
 '''
 @app.errolhandler(404)
