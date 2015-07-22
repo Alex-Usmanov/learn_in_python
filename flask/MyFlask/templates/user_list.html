@@ -27,6 +27,7 @@
     </tr>
     {% for user in users_info %}
     {% edit_id_url="/user/edit/"+str(user[0]) %}
+    {% delete_id_url="/user/edit/"+str(user[0])" %}
     <tr>
         <td>{{ user[0] }}</td>
         <td>{{ user[1] }}</td>
@@ -34,7 +35,7 @@
         <td>{{ user[3] }}</td>
         <td>{{ user[4] }}</td>
         <th><a href={{ edit_id_url }}>edit</a></th>
-        <th>delete</th>
+        <th><a href={{ delete_id_url }}>delete</a></th>
     </tr>
 
     {% endfor %}

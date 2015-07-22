@@ -1,10 +1,10 @@
 # coding:utf-8
-
+import flask
 from flask import Flask
 from flask import request
 from flask import render_template
 
-import flask
+
 
 import os
 
@@ -243,7 +243,7 @@ def edit_user(id):
                 users_data = user.load()
 
                 return render_template('user_list.html', users_info=users_data)
-        return render_template('user_edit.html')
+        return render_template('user_edit.html', user_id=id)
     else:
         return "<h1> 当前用户无权限查看该页面</h1>"
 

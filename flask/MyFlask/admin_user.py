@@ -61,36 +61,37 @@ def edit_user(id):
     username = request.cookies.get('username')
     if username == 'admin':
         if user.search_id(id):
+            edit_id_url = '/user/edit/' + str(id)
+            default_data = user.search_id(id)
             if request.methods == 'POST':
                 user_data = request.form.to_dict()
                 user.update(id, user_data)
                 users_data = user.load()
 
                 return render_template('user_list.html', users_info=users_data)
-        return render_template('user_edit.html')
+        return render_template('user_edit.html', action_url=edit_id_url, default_info=default_data)
     else:
         return "<h1> 当前用户无权限查看该页面</h1>"
-
 
 '''
 /user/delete/<id>
     删除这个用户
     成功后跳转到 list 页面
     失败后也跳转到 list 页面（一般不会失败，所以先不管）
-#  绝对黑魔法
 '''
-
 
 @app.route('/user/delete/<id>', methods=['POST', 'GET'])
 def delete_user(id):
     username = request.cookies.get('username')
     if username == 'admin':
-        print 'delete user data : ', user.search_id(id)
-        user.delete(id)
-        return render_template('user_list.html')
+        if request.methods == 'POST':
+            print 'delete user data : ', user.search_id(id)
+            user.delete(id)
+            return render_template('user_list.html')
+        userdata = user.search_id(id)
+        return render_template('user_delete.html', user_info=userdata)
     else:
         return "<h1> 当前用户无权限查看该页面</h1>"
-
 
 if __name__ == '__main__':
     app.debug = True

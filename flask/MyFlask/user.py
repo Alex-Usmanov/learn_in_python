@@ -67,8 +67,8 @@ def update(user_id, user_dict):
 
     # update_sentence = "UPDATE user SET " + user_phrase + " WHERE id =" + str(user_id) + ';'
     # print "update_sentence :", update_sentence
-    cu.execute("UPDATE user SET " + user_phrase + " WHERE id =" + str(user_id))
-    # FIXME， cu.execute("UPDATE user SET " + user_phrase + " WHERE id = ? ", user_id)
+    # FIXME， cu.execute("UPDATE user SET " + user_phrase + " WHERE id =" + str(user_id))
+    cu.execute("UPDATE user SET " + user_phrase + " WHERE id = ? ", user_id)
     # WHY 用问号可以防注入？
     '''
     cu.execute("UPDATE user SET " + str(tuple(user_dict.keys())) +
