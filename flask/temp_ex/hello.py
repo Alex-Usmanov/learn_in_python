@@ -91,6 +91,11 @@ def index():
     return render_template('index.html', form=form, name=session.get('name'), known=session.get('known', False))
 
 
+'''
+    提交表单后，程序会使用 filter_by() 查询过滤器在数据库中查找提交的名字。
+    变量 known 被写入用户会话中，因此重定向之后，可以把数据传给模板，用来显示自定义的欢迎消息。
+    注意，要想让程序正常运行，你必须按照前面介绍的方法，在 Python shell 中创建数据库表。
+'''
 if __name__ == '__main__':
     app.debug = True
     app.run()
