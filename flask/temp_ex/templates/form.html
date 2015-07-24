@@ -1,0 +1,8 @@
+{% import "bootstrap/wtf.html" as wtf %}
+{{ wtf.quick_form(form) }}
+<!-- 使用 Bootstrap 中预先定义好的表单样式渲染整个 Flask-WTF 表单 -->
+<form method="POST">
+    {{ form.hidden_tag() }}
+    {{ form.name.label }} {{ form.name(id='my-text-field') }}
+    {{ form.submit() }}
+</form>
