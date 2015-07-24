@@ -1,5 +1,6 @@
 # coding:utf-8
 
+from flask.ext.wtf import Form
 from flask.ext.sqlalchemy import SQLAlchemy
 import os
 import flask
