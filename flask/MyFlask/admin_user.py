@@ -73,12 +73,14 @@ def edit_user(id):
     else:
         return "<h1> 当前用户无权限查看该页面</h1>"
 
+
 '''
 /user/delete/<id>
     删除这个用户
     成功后跳转到 list 页面
     失败后也跳转到 list 页面（一般不会失败，所以先不管）
 '''
+
 
 @app.route('/user/delete/<id>', methods=['POST', 'GET'])
 def delete_user(id):
@@ -92,6 +94,7 @@ def delete_user(id):
         return render_template('user_delete.html', user_info=userdata)
     else:
         return "<h1> 当前用户无权限查看该页面</h1>"
+
 
 if __name__ == '__main__':
     app.debug = True

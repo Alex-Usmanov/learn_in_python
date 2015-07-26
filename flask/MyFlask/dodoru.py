@@ -4,8 +4,6 @@ from flask import Flask
 from flask import request
 from flask import render_template
 
-
-
 import os
 
 import user
@@ -24,6 +22,7 @@ app = Flask(__name__)
 @app.route('/')
 def index():
     name = request.cookies.get('username')
+    print request.cookies
     # return '<a href="/login">LOGIN</a> &nbsp&nbsp&nbsp&nbsp <a href="/sign">SIGN</a>'
     return render_template('index.html', username=name)
 
@@ -47,8 +46,9 @@ def login():
                     response = flask.make_response(flask.redirect(flask.url_for('index')))
                     response.set_cookie('username', ur[1])
                     return response
-                else:
-                    return '<h1> password is not suit for the username. </h1>'
+        else:
+            print ur[1], userdata['name']
+            return '<h1> password is not suit for the username. </h1>'
     return render_template('login.html')
 
 
@@ -88,20 +88,22 @@ def sign():
 @app.route('/settings/<name>', methods=['POST', 'GET'])
 def settings(name):
     username = request.cookies.get('username')
-
     if username == name:
         users_data = user.load()
         url = '/settings/' + str(name)
         if request.method == 'POST':
-            user_passwords = request.form.to_dict()
-            if user_passwords['password1'] == user_passwords['password2']:
+            user_password = request.form.to_dict()
+            if user_password['password'] == user_password['password1']:
+                del user_password['password1']
                 for ur in users_data:
-                    if ur['name'] == name:
-                        ur['password'] = user_passwords['password1']
-                        user.cover(users_data)
+                    # if ur['name'] == name:
+                    if ur[1] == name:
+                        # ur['password'] = user_passwords['password1']
+                        # user.cover(users_data)
+                        user.update(ur[0], user_password)
                         return '<h1> 密码更改成功<h2>'
                         # FIXME user
-        return render_template('settings.html', action_url=url)
+        return render_template('settings.html', username=name, action_url=url)
     else:
         return flask.redirect(flask.url_for('/login'))
         # 必须是当前用户才可以修改密码,如果不是就要重新登陆
@@ -114,7 +116,7 @@ def retrieve_password():
         print 'user_email: ', user_email
         users = user.load()
         for ur in users:
-            if ur['email'] == user_email['email']:
+            if ur[3] == user_email['email']:
                 # 发送用户和密码 送给 该邮箱
                 print ur['user_name'], ur['password']
                 # return "<h1> 你好, 已经将密码发到 " + user_email['email'] + "</h1>"
@@ -192,7 +194,7 @@ def problem_subpage(problem_id):
 
 # 添加一个新用户
 # only admin can operate other users information
-@app.route('/user/add', methods=['POST', 'GET'])
+@app.route('/settings/user/add', methods=['POST', 'GET'])
 def add_user():
     username = request.cookies.get('username')
     if username == 'admin':
@@ -200,11 +202,11 @@ def add_user():
             userdata = request.form.to_dict()
             if userdata['password'] == userdata['password1']:
                 del userdata['password1']
+                print userdata
                 user.save(userdata)
                 print "add user OK : ", userdata
-
                 usersdata = user.load()
-                return render_template('user_list.html', users_info=usersdata)
+                return flask.redirect(flask.url_for('/settings/user/list'))
                 # FIXME 添加成功后，进入 user_list 页面，查看资料
             else:
                 return render_template('user_add.html', tips="<h1>输入密码前后不一致，请重新设置</h1>")
@@ -216,7 +218,7 @@ def add_user():
 # /user/list
 # 显示所有用户，以 table 的形式，带有 th 标签（表格头）
 # 这个页面每个 条目 的最右边有一个 edit 超链接，点击跳转到 edit 页面
-@app.route('/user/list', methods=['POST', 'GET'])
+@app.route('/settings/user/list', methods=['POST', 'GET'])
 def user_list():
     username = request.cookies.get('username')
     if username == 'admin':
@@ -235,7 +237,7 @@ def user_list():
 '''
 
 
-@app.route('/user/edit/<id>', methods=['POST', 'GET'])
+@app.route('/settings/user/edit/<id>', methods=['POST', 'GET'])
 def edit_user(id):
     username = request.cookies.get('username')
     if username == 'admin':
@@ -260,7 +262,7 @@ def edit_user(id):
 '''
 
 
-@app.route('/user/delete/<id>', methods=['POST', 'GET'])
+@app.route('/settings/user/delete/<id>', methods=['POST', 'GET'])
 def delete_user(id):
     username = request.cookies.get('username')
     if username == 'admin':
@@ -269,6 +271,7 @@ def delete_user(id):
         return render_template('user_list.html')
     else:
         return "<h1> 当前用户无权限查看该页面</h1>"
+
 
 '''
 @app.errolhandler(404)
