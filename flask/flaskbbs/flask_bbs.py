@@ -21,7 +21,7 @@ def bbs():
         msg = request.form.to_dict()
         print msg
         message.save(msg)
-    return str(message.load())
+    return str(message.load(), messages=message)
 
 
 if __name__ == '__main__':
