@@ -15,17 +15,17 @@
 <hr>
 
 <!-- add -->
-<form action={{ action_url }} method="post">
+<form action='/settings/user/edit/{{ user_id }}' method="post">
     <label for="username">用户名</label>
-    <input id="username" type="text" name="username" placeholder={{ default_info[1] }}>
+    <input id="username" type="text" name="username" placeholder="{{ default_info }}">
     <br>
     <br>
     <label for="password">密码</label>
-    <input id="password" type="password" name="password" placeholder={{ default_info[2] }}>
+    <input id="password" type="password" name="password" placeholder="{{ default_info }}">
     <br>
     <br>
     <label for="email">邮箱</label>
-    <input id="email" type="email" name="email" placeholder={{ default_info[3] }}>
+    <input id="email" type="email" name="email" placeholder="{{ default_info }}">
     <br>
     <br>
 

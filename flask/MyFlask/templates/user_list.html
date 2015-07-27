@@ -32,8 +32,8 @@
         <td>{{ user[2] }}</td>
         <td>{{ user[3] }}</td>
         <td>{{ user[4] }}</td>
-        <td><a href="/user/edit/" {{ (user[0]) }}>edit</a></td>
-        <td><a href="/user/delete/" {{ (user[0]) }}>delete</a></td>
+        <td><a href="/settings/user/edit/{{ (user[0]) }}">edit</a></td>
+        <td><a href="/settings/user/delete/{{ (user[0]) }}">delete</a></td>
     </tr>
 
     {% endfor %}

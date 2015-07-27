@@ -62,10 +62,9 @@ def load(file=db_file_path):
 def save(user_dict):
     conn = sqlite3.connect(db_file_path)
     cu = conn.cursor()
-    print (user_dict.values())
     print "INSERT INTO user " + str(tuple(user_dict.keys())) + " VALUES ", (tuple(user_dict.values()))
     # cu.execute("INSERT INTO user (username,password,email) values " + str(tuple(user_dict.values()))
-    cu.execute("INSERT INTO user " + str(tuple(user_dict.keys())) + " VALUES  " % (tuple(user_dict.values())))
+    cu.execute("INSERT INTO user " + str(tuple(user_dict.keys())) + " VALUES " + str(tuple(user_dict.values())))
     # print
     conn.commit()
     conn.close()

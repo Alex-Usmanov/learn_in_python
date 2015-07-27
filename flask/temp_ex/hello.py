@@ -29,7 +29,7 @@ print app.config
 '''
 
 db = SQLAlchemy(app)
-
+print db.Model
 # 5.6 定义模型
 # Flask-SQLAlchemy 要求每个模型都要定义 主键 ，这一列经常命名为 id
 class Role(db.Model):
@@ -89,7 +89,9 @@ def index():
             session['Known'] = False
         else:
             session['Known'] = True
+
         session['name'] = True
+        print db.session
         form.name.data = ''
         return redirect(url_for('index'))
     return render_template('index.html', form=form, name=session.get('name'), known=session.get('known', False))

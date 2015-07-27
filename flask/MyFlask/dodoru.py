@@ -203,10 +203,12 @@ def add_user():
             if userdata['password'] == userdata['password1']:
                 del userdata['password1']
                 print userdata
+                for i in userdata:
+                    userdata[i] = userdata[i].encode('utf-8')
                 user.save(userdata)
                 print "add user OK : ", userdata
                 usersdata = user.load()
-                return flask.redirect(flask.url_for('/settings/user/list'))
+                return flask.redirect(flask.url_for('settings/user/list'))
                 # FIXME 添加成功后，进入 user_list 页面，查看资料
             else:
                 return render_template('user_add.html', tips="<h1>输入密码前后不一致，请重新设置</h1>")
@@ -242,12 +244,14 @@ def edit_user(id):
     username = request.cookies.get('username')
     if username == 'admin':
         if user.search_id(id):
+            default_user = user.search_id(id)
+            print default_user
             if request.method == 'POST':
                 user_data = request.form.to_dict()
                 user.update(id, user_data)
                 users_data = user.load()
 
-                return render_template('user_list.html', users_info=users_data)
+                return render_template('user_list.html', user_id=id, users_info=users_data, default_info=default_user)
         return render_template('user_edit.html', user_id=id)
     else:
         return "<h1> 当前用户无权限查看该页面</h1>"
