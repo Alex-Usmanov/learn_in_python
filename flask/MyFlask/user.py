@@ -2,16 +2,25 @@
 
 import sqlite3
 import os
+import sys
 
+reload(sys)
+print sys.getdefaultencoding()
+sys.setdefaultencoding('utf-8')
+print sys.getdefaultencoding()
 _db_directory = 'sqlite3_db_files'
 db_file = 'user_info.db'
 db_file_path = os.path.join(_db_directory, db_file)
 
+"""
+# INIT db table
 conn = sqlite3.connect(db_file_path)
 # if the file path is not exist,throw exception :unable to open database file
 c = conn.cursor()
-"""
-# INIT db table
+c.execute("INSERT INTO user ('username', 'password', 'email') VALUES  ('apple', 'apple', 'apple@email.com')")
+conn.commit()
+conn.close()
+
 c.execute('''CREATE TABLE user(
     id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
     username TEXT NOT NULL UNIQUE CHECK(length(username) >= 2 AND length(username <= 30)),
@@ -53,8 +62,11 @@ def load(file=db_file_path):
 def save(user_dict):
     conn = sqlite3.connect(db_file_path)
     cu = conn.cursor()
+    print (user_dict.values())
+    print "INSERT INTO user " + str(tuple(user_dict.keys())) + " VALUES ", (tuple(user_dict.values()))
     # cu.execute("INSERT INTO user (username,password,email) values " + str(tuple(user_dict.values()))
-    cu.execute("INSERT INTO user " + str(tuple(user_dict.keys())) + " VALUES " + str(tuple(user_dict.values())))
+    cu.execute("INSERT INTO user " + str(tuple(user_dict.keys())) + " VALUES  " % (tuple(user_dict.values())))
+    # print
     conn.commit()
     conn.close()
 
@@ -64,11 +76,11 @@ def update(user_id, user_dict):
     cu = conn.cursor()
     user_phrase = ((str(user_dict).replace(':', '=')).replace('{', '')).replace('}', '')
     print user_phrase
-
     # update_sentence = "UPDATE user SET " + user_phrase + " WHERE id =" + str(user_id) + ';'
     # print "update_sentence :", update_sentence
-    # FIXME， cu.execute("UPDATE user SET " + user_phrase + " WHERE id =" + str(user_id))
-    cu.execute("UPDATE user SET " + user_phrase + " WHERE id = ? ", user_id)
+    # FIXME，
+    cu.execute("UPDATE user SET " + user_phrase + " WHERE id =" + str(user_id))
+    # cu.execute("UPDATE user SET " + user_phrase + " WHERE id = ? ", user_id)
     # WHY 用问号可以防注入？
     '''
     cu.execute("UPDATE user SET " + str(tuple(user_dict.keys())) +
@@ -83,7 +95,7 @@ def delete(user_id):
     conn = sqlite3.connect(db_file_path)
     cu = conn.cursor()
     cu.execute("DELETE FROM user WHERE id = " + str(user_id))
-    # FIXME，cu.execute("DELETE FROM user WHERE id = ? ;",id)
+    # FIXME，cu.execute("DELETE FROM user WHERE id = ? ",user_id)
     conn.commit()
     conn.close()
 
@@ -97,6 +109,15 @@ def search_id(user_id):
     print userdata
     conn.close()
     return userdata
+
+
+def show_lines(file=db_file_path):
+    usersdata = load(file)
+    print "ID,  username, password , email ,timestamp "
+    for ur in usersdata:
+        print ur
+
+        # print usersdata[1][2]
 
 
 if __name__ == "__main__":
@@ -113,6 +134,12 @@ if __name__ == "__main__":
     search_id(4)
     delete(4)
     search_id(4)
+    load()
+    # save({'username':'pear','password':'pear','email':'pear@email.com'})
+
+    save({'username': u'apple', 'password': u'apple', 'email': u'apple@email.com'})
+    load()
+    show_lines()
 
     '''
     import db

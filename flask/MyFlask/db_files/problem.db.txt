@@ -6,3 +6,4 @@
 {'id': 6, 'url': '/problems/6', 'creator': u'leetcode', 'detail': u'The string "PAYPALISHIRING" is written in a zigzag pattern on a given number of rows like this: (you may want to display this pattern in a fixed font for better legibility)\r\n\r\nP   A   H   N\r\nA P L S I I G\r\nY   I   R\r\nAnd then read line by line: "PAHNAPLSIIGYIR"\r\nWrite the code that will take a string and make this conversion given a number of rows:\r\n\r\nstring convert(string text, int nRows);\r\nconvert("PAYPALISHIRING", 3) should return "PAHNAPLSIIGYIR".', 'title': u'ZigZag Conversion '}
 {'id': 7, 'url': '/problems/7', 'creator': u'leetcode', 'detail': u'Reverse digits of an integer.\r\n\r\nExample1: x = 123, return 321\r\nExample2: x = -123, return -321', 'title': u'Reverse Integer'}
 {'id': 8, 'url': '/problems/8', 'creator': u'asdf', 'detail': u'asdf', 'title': u'123'}
+{'id': 9, 'url': '/problems/9', 'creator': u'hello', 'detail': u'hello', 'title': u'hello'}
