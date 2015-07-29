@@ -1,4 +1,5 @@
 # coding:utf-8
+# https://github.com/Thinkful/sqlalchemy-demo
 """
 A single page app exmploring how to use SQLAlchemy & Flask.
 """
@@ -18,82 +19,61 @@ db = SQLAlchemy(app)
 
 # 定义模型,一般是类，属性对应数据库表中的列
 
-class User(db.Model):
-    # db.Model 是基类，定义User 模型
-    __tablename__ = 'users'
-    # 表名 为 ‘users’，其余类变量为模型的属性（db.Column 类的实例）
+class Person(db.Model):
+    # db.Model 是基类，定义Person 模型
+    __tablename__ = 'people'
+    # 表名 为 ‘people’，其余类变量为模型的属性（db.Column 类的实例）
     id = db.Column(db.Integer, primary_key=True)
     # 主键，一般为id
-    name = db.Column(db.String(50), unique=True, nullable=False)
+    name = db.Column(db.String(100))
     # 属性1= name ,字符长度100以内
-    password = db.Column(db.String(20))
-    email = db.Column(db.String(50))
-    timestamp = db.Column(db.DateTime, default=db.DateTime.Now)
-    # Fixme ,test timestamp db.DateTime.Now  看看能不能自动初始化这个值
 
     def __repr__(self):
-        return "%d -  %s ： %s , %s  ,  %s" % (self.id, self.name, self.password, self.email, str(self.timestamp))
+        return self.name
         # 返回具有可读性的字符串来表示模型，调试和测试可以使用
 
 
-class Problem(db.Model):
+class Job(db.Model):
     # 定义 Job 模型
-    __tablename__ = 'problems'
-    # 表名为‘problems’
+    __tablename__ = 'jobs'
+    # 表名为‘jobs’
     id = db.Column(db.Integer, primary_key=True)
     # 主键id
-    title = db.Column(db.String(200))
-    detail = db.Column(db.String(1000))
+    title = db.Column(db.String(100))
+    # 属性1=title, 字符长度100以内
+    person_id = db.Column(db.Integer, db.ForeignKey('people.id'))
+    # 属性2=person_id,因为person.id 是Person模型的主键，所以是外键
+    person = db.relationship('Person', backref='jobs')
+    # 关系 ，一对多，向另一端Person模型添加一个 jobs 的属性，可以访问Job模型，返回模型对象，而不是外键
 
-    # 属性1=title, 字符长度200以内
-    creator_id = db.Column(db.Integer, db.ForeignKey('users.id'))
-    # 属性2=creator_name ,因为name 在 people 是 unique，所以是外键
-    creator = db.relationship('User', backref='problems')
-    # 关系 ，一对多，向另一端Person模型添加一个 problems 的属性，可以访问Problem模型，返回模型对象，而不是外键
-    solution_id = db.Column(db.Integer, db.ForeignKey('solutions.id'))
-    # 属性3=solution_id,来自Solution模型的外键,用来查询答卷位置
-    solution = db.relationship('Solution', backref='problem')
-    # 关系，一对多，向另一端的Solution模型添加一个problem的属性，可以用来查询它的题目
+    employer_id = db.Column(db.Integer, db.ForeignKey('companies.id'))
+    # 属性3=employer_id,来自Company模型的外键,用来查询工作所在的单位
+    employer = db.relationship('Company', backref='staff')
+    # 关系，一对多，向另一端的Company模型添加一个staff的属性，可以用来查询它的员工
     def __repr__(self):
-        return "%d - %s : %s by %s" % (self.id, self.title, self.detail, str(self.creator_name))
+        return "%s: %s at %s" % (str(self.person), self.title, str(self.employer))
         # 返回具有可读性的字符串来表示模型，调试和测试可以使用
 
 
-class Solution(db.Model):
+class Company(db.Model):
     # 定义Company 模型
-    __tablename__ = 'solutions'
+    __tablename__ = 'companies'
     # 表名为companies
     id = db.Column(db.Integer, primary_key=True)
     # 主键 id
-    detail = db.Column(db.String(2000))
-    # score=db.Column(db.Integer,default=0)
-    candidate_name = db.Column(db.String(50), db.ForeignKey('users.id'))
-    candidate = db.relationship('User', backref='solutions')
+    name = db.Column(db.String(100))
+    # 属性1=name ,公司名字字长100以内
 
     def __repr__(self):
-        return self.detail
+        return self.name
         # 返回具有可读性的字符串来表示模型，调试和测试可以使用
 
 
-def save(Object, dict):
-    # Object =Person,Problem,Solution,FIXME ,it is wrong
-    temp = Object
-    for k, w in dict:
-        temp.k = w
-    db.session.add(temp)
-    db.commit()
-    return temp
-
-
-def load():
-    pass
-
-
-def save_user(name, password, email):
+def setup_person(name, work_history):
     # 定义一个初始化人的信息和履历的数据表 模式
-    user = User(name=name, password=password, email=email)
+    person = Person(name=name)
     # 传值，实例人员
-    db.session.add(user)
+    db.session.add(person)
     # 通过数据库会话管理对数据库所做的改动，准备把对象写入数据库之前，先要将其添加到会话中：
     for company_name, title in work_history:
         # 传值，构造一个人的履历表
@@ -178,7 +158,6 @@ def main():
     db.create_all()
     # 初始化数据库
     setup_darrell()
-    print Person
     # 写进darrell 的信息数据表
     setup_dan()
     # 写进dan 的信息数据表
@@ -188,11 +167,6 @@ def main():
     # 运行服务器
 
 
-def test():
-    save(Person, {'name': 'dodoru', 'password': 'password', 'email': 'dodoru@do.com', 'timestamp': ''})
-
-
 if __name__ == '__main__':
-    # main()
-    test()
+    main()
 
