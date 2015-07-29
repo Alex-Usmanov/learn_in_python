@@ -48,6 +48,7 @@ class Problem(db.Model):
     # 属性1=title, 字符长度200以内
     creator_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     # 属性2=creator_name ,因为name 在 people 是 unique，所以是外键
+    #
     creator = db.relationship('User', backref='problems')
     # 关系 ，一对多，向另一端Person模型添加一个 problems 的属性，可以访问Problem模型，返回模型对象，而不是外键
     solution_id = db.Column(db.Integer, db.ForeignKey('solutions.id'))
@@ -67,7 +68,7 @@ class Solution(db.Model):
     # 主键 id
     detail = db.Column(db.String(2000))
     # score=db.Column(db.Integer,default=0)
-    candidate_name = db.Column(db.String(50), db.ForeignKey('users.id'))
+    candidate_id = db.Column(db.String(50), db.ForeignKey('users.id'))
     candidate = db.relationship('User', backref='solutions')
 
     def __repr__(self):
@@ -89,24 +90,37 @@ def load():
     pass
 
 
-def save_user(name, password, email):
+def save_user(name, password, email, problems_id=None, solutions_id=None):
     # 定义一个初始化人的信息和履历的数据表 模式
     user = User(name=name, password=password, email=email)
     # 传值，实例人员
     db.session.add(user)
     # 通过数据库会话管理对数据库所做的改动，准备把对象写入数据库之前，先要将其添加到会话中：
-    for company_name, title in work_history:
-        # 传值，构造一个人的履历表
-        employer = Company(name=company_name)  # 上家单位（工作单位）
-        job = Job(title=title, person=person, employer=employer)  # 工作
-
-        db.session.add(employer)
-        # 准备把对象写入数据库之前，先添加到会话中：
-        db.session.add(job)
-        # 准备把对象写入数据库之前，先添加到会话中：
+    if not problems_id:
+        for i in problems_id:
+            problems = Problem(id=i, create_id=user.id)
+            db.session.add(problems)
+    if not solutions_id:
+        for k in solutions_id:
+            solutions = Solution(id=k, candidate_id=user.id)
+            db.session.add(solutions)
     db.session.commit()
     # 提交会话，把对象写入数据库
 
+
+def save_problem(test_record):
+    for title, detail, create_id, solution_id in test_record:
+        problem = Problem(title=title, detail=detail, create_id=create_id, solution_id=solution_id)
+        db.session.add(problem)
+    db.session.commit()
+
+
+def save_solution(solution_record):
+    for detail, candidate_id in solution_record:
+        solution = Solution(detail=detail, candidat_ide=candidate_id)
+        db.session.add(solution)
+    db.session.commit()
+    
 
 def setup_darrell():
     name = 'Darrell Silver'
