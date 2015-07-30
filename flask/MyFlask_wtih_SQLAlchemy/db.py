@@ -120,7 +120,7 @@ def save_solution(solution_record):
         solution = Solution(detail=detail, candidat_ide=candidate_id)
         db.session.add(solution)
     db.session.commit()
-    
+
 
 def setup_darrell():
     name = 'Darrell Silver'
