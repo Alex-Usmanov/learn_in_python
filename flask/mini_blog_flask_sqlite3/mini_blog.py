@@ -25,8 +25,10 @@ DEBUG = True
 SECRET_KEY = 'development key'
 USERNAME = 'admin',
 PASSWORD = 'default'
+ENABlE_THREADS = True  # uwsgi默认不支持子线程
 
 app.config.from_object(__name__)
+
 
 def connect_db():
     ''' connects to the specific  database.  '''
@@ -48,10 +50,10 @@ def get_db():
 
 
 def init_db():
-    # db = get_db()
-    with closing(connect_db()) as db:
-        with app.open_resource('schema.sql', mode='r') as f:
-            db.cursor().executescript(f.read())
+    db = get_db()
+    # with closing(connect_db()) as db:
+    with app.open_resource('schema.sql', mode='r') as f:
+        db.cursor().executescript(f.read())
     db.commit()
     ''' http://www.pythondoc.com/flask/tutorial/dbinit.html?highlight=executescript
     from contextlib import closing
@@ -66,10 +68,8 @@ def before_request():
     g.db = connect_db()
 
 
-@app.after_request
-
-:
-def after_request(excepthon):
+@app.teardown_request
+def teardown_request(excepthon):
     g.db.close()
 
 
