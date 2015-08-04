@@ -1,0 +1,6 @@
+DATABASE= 'mini_blog.db'
+DEBUG=True
+SECRET_KEY='development key'
+USERNAME='admin',
+PASSWORD='default'
+ENABlE_THREADS = True
