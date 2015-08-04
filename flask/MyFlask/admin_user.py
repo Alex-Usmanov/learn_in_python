@@ -3,13 +3,10 @@
 from flask import Flask
 from flask import request
 from flask import render_template
-
 import flask
-
 import user
 
 app = Flask(__name__)
-
 
 # 添加一个新用户
 # only admin can operate other users information
