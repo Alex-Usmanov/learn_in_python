@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>修改密码</title>
+</head>
+<body>
+<!-- 这里的链接地址是route参数中的地址 -->
+
+{% if username == 'admin' %}
+<a href="./user/list">用户列表</a>
+<a href="./user/add">增加用户</a>
+{% else %}
+
+{% endif %}
+
+<hr>
+<form action={{ action_url }} method="post">
+    <h1>不好意思，暂时只有更改密码的功能</h1>
+    <hr>
+    <br>
+    <label for="password">更改密码</label>
+    <input id="password" type="password" name="password">
+    <br>
+    <br>
+    <label for="password1">再输密码</label>
+    <input id="password1" type="password" name="password1">
+    <br>
+    <br>
+    <button type="submit">确定</button>
+</form>
+</body>
+</html>

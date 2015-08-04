@@ -1,0 +1,43 @@
+<!doctype html>
+
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>第 {{ id }} 题</title>
+</head>
+<body>
+<!-- view -->
+<h1>{{ problem.title }} </h1>
+<br>
+<h4> 题主：{{ problem.creator }}</h4>
+<br>
+<article>{{ problem.detail }} :</article>
+<br>
+<br>
+<hr color="111">
+{% if solutions %}
+{% for solution in solutions %}
+<p>{{ solution.creator }}</p>
+<article>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ solution.detail }}</article>
+<hr>
+{% endfor %}
+{% endif %}
+<h3> come on,baby ♥ ~ create your solution </h3>
+<br>
+
+<!-- add -->
+<form action={{ problem.url }} method="post">
+    <label for="solution_creator">答题者</label>
+    <input id="solution_creator" type="text" size="50" name="creator" required="required">
+    <br>
+    <br>
+    <label for="solution_detail">你的答案</label>
+    <br>
+    <textarea id="solution_detail" name="detail" cols="80" rows="10"></textarea>
+    <br>
+    <br>
+    <button type="submit">post</button>
+</form>
+</body>
+
+</html>

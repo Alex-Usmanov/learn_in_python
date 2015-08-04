@@ -1,0 +1,59 @@
+<!doctype html>
+
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>题库</title>
+</head>
+
+<body>
+<!-- view -->
+<h1> Swimming in the Sea of Problems </h1>
+<hr>
+
+<table>
+    <!-- title -->
+    <!-- contents -->
+    {% if problems %}
+    <tr>
+        <th>#</th>
+        <th>题目</th>
+        {#
+        <th>题目描述</th>
+        #}
+        <th>发布人</th>
+    </tr>
+    {% for problem in problems %}
+    <tr>
+        <td>{{ problem.id }}</td>
+        <td><a href={{ problem.url }}>{{ problem.title }}</a></td>
+        {#
+        <td>{{ problem.detail }}</td>
+        #}
+        <td>{{ problem.creator }}</td>
+    </tr>
+
+    {% endfor %}
+    {% endif %}
+
+</table>
+
+<!-- add -->
+<form action="/problems" method="post">
+    <label for="problem_title">题目</label>
+    <input id="problem_title" type="text" size="50" name="title" required="required">
+    <br>
+    <br>
+    <label for="problem_detail">题目描述</label>
+    <br>
+    <textarea id="problem_detail" name="detail" cols="80" rows="10"></textarea>
+    <br>
+    <label for="problem_creator">发布者</label>
+    <input id="problem_creator" name="creator">
+    <br>
+
+    <button type="submit">post</button>
+</form>
+</body>
+
+</html>
