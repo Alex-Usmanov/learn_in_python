@@ -53,6 +53,7 @@ class Problem(db.Model):
     # 关系 ，一对多，向另一端Person模型添加一个 problems 的属性，可以访问Problem模型，返回模型对象，而不是外键
     solution_id = db.Column(db.Integer, db.ForeignKey('solutions.id'))
     # 属性3=solution_id,来自Solution模型的外键,用来查询答卷位置
+    # FIXME ,怎样才可以让默认 每个Solution.id == Prolblem.id ?
     solution = db.relationship('Solution', backref='problem')
     # 关系，一对多，向另一端的Solution模型添加一个problem的属性，可以用来查询它的题目
     def __repr__(self):
@@ -108,105 +109,89 @@ def save_user(name, password, email, problems_id=None, solutions_id=None):
     # 提交会话，把对象写入数据库
 
 
-def save_problem(test_record):
-    for title, detail, create_id, solution_id in test_record:
+'''
+def save_problem(problem_record):
+    for title, detail, create_id, solution_id in problem_record:
         problem = Problem(title=title, detail=detail, create_id=create_id, solution_id=solution_id)
         db.session.add(problem)
     db.session.commit()
+'''
 
 
+def save_problem(title, detail, creator_id):
+    problem = Problem(title=title, detail=detail, creator_id=creator_id)
+    # solution=Solution(id=problem.id)
+    db.session.add(problem)
+    # db.session.add(solution)
+    db.session.commit()
+
+
+'''
 def save_solution(solution_record):
     for detail, candidate_id in solution_record:
         solution = Solution(detail=detail, candidat_ide=candidate_id)
         db.session.add(solution)
     db.session.commit()
+'''
 
 
-def setup_darrell():
-    name = 'Darrell Silver'
-    work_history = [
-        ('Manhattan Sports', 'Rollerblade salesman'),
-        ('Manhattan Sports', 'Private rollerblade lessons'),
-        ('Vail Resorts', 'Guest Service'),
-        ('Clinton Group', 'Statarb'),
-        ('Perpetually', 'CEO'),
-        ('Thinkful', 'CEO'),
-    ]
-    setup_person(name, work_history)
-    # 初始化一个叫Darrell 的个人履历表
+def save_solution(solution_id, detail, candidate_id):
+    solution = Solution(id=solution_id, detail=detail, candidat_ide=candidate_id)
+    db.session.add(solution)
+    db.session.commit()
 
 
-def setup_dan():
-    name = 'Dan Friedman'
-    work_history = [
-        ('Dylan\'s Candy Shop', 'Associate'),
-        ('Dylan\'s Candy Shop', 'Finance intern'),
-        ('Ramaquois', 'Camp Counselor'),
-        ('RRE', 'Summer analyst'),
-        ('Elm City Labs', 'Product manager'),
-        ('Thinkful', 'President'),
-    ]
-    setup_person(name, work_history)
-    # 初始化一个叫Dan 的个人履历表
+def get_user_id(username):
+    user = User.query.filter(User.name == username)
+    return user.id
 
 
-@app.route('/')
-def index():
-    # note we've not bothered with a template,
-    # and encoding the URL will work both ways in modern browsers
-    # (though encoding w/ %20 is preferable)
-    return """<h1>LinkedIn 0.0.0.0.0.0.1</h1>
-<pre>
-    <a href="/Darrell%20Silver">Darrell</a>
-    <a href="/Dan Friedman">Dan</a>
-</pre>"""
+def load_user(user_id):
+    user_data = User.query.filter(User.id == user_id)
+    return user_data
 
 
-@app.route('/<name>')
-def career_history(name):
-    # one strategy for querying
-    jobs = Job.query.join(Person).filter(Person.name == name)
-    # 通过查询Job模型里 人名name（外键 Person.name），把Job里面某人的所有工作经验都取出来
-
-    # another querying strategy; more common, but uglier, IMO
-    titles = db.session.query(Job.title).join(Person) \
-        .filter(Person.name == name).distinct()
-    # 通过查询Job模型里  人名name（外键 Person.name），把Job里面某人的所有职衔都取出来
-
-    # is this any clearer than raw SQL? Seems silly.
-    employers = db.session.query(Company.name, func.count(Company.id)) \
-        .join(Job).join(Person) \
-        .filter(Person.name == name).group_by(Company.name)
-    # 限定人名，通过联合 Job 模型 和 Person 模型，找到某人的工作单位，并且按字母排列。
-
-    return render_template('career_history.html', name=name, jobs=jobs,
-                           titles=titles, employers=employers)
-    # 把所有查询到的个人资料都放到这个人的简历模板里去
+def load_problem(problem_id):
+    problem_data = Problem.query.filter(Problem.id == problem_id)
+    return problem_data
 
 
-def main():
-    print 'Dropping all...'
-    db.drop_all()
-    # 粗暴地删掉数据库
-    print 'Creating all...'
-    db.create_all()
-    # 初始化数据库
-    setup_darrell()
-    print Person
-    # 写进darrell 的信息数据表
-    setup_dan()
-    # 写进dan 的信息数据表
-    print 'Starting app...'
-
-    app.run()
-    # 运行服务器
+def load_solution(solution_id):
+    solution_data = Solution.query.filter(Solution.id == solution_id)
+    return solution_data
 
 
-def test():
-    save(Person, {'name': 'dodoru', 'password': 'password', 'email': 'dodoru@do.com', 'timestamp': ''})
+def load_ones_problems(user_id):
+    problems = Problem.query(Problem.id, Problem.title, Problem.detail).join(User).filter(
+        Problem.creator_id == user_id).group_by(Problem.id)
+    return problems
+
+
+def load_one_solutions(user_id):
+    solutions = db.session.query(Solution.id, Problem.title, Solution.detail, User.name).join(Problem).join(User).join(
+        Solution).filter(User.id == user_id, Solution.candidate_id == user_id,
+                         Problem.solution_id == Solution.id).group_by(Solution.id)
+
+    return solutions
+
+
+def test_user():
+    save(User, {'name': 'dodoru', 'password': 'password', 'email': 'dodoru@do.com', 'timestamp': ''})
+
+
+def test_all():
+    # test_user() FIXME,save() has something wrong
+    save_problem('test', 'detail', 1)
+    save_user('melon', 'melon', 'melon@email.com')
+    save_problem('testmelon', 'datailmelon', 2)
+    save_solution(2, 'melon_detail', 1)
+    print load_one_solutions(1)
+    print load_ones_problems(2)
+    print load_problem(2)
+    print load_user(2)
+    print load_solution(1)
+    print load_solution(2)
 
 
 if __name__ == '__main__':
-    # main()
-    test()
-
+    test_all()
