@@ -28,7 +28,7 @@ class User(db.Model):
     # 属性1= name ,字符长度100以内
     password = db.Column(db.String(20))
     email = db.Column(db.String(50))
-    timestamp = db.Column(db.DateTime, default=db.DateTime.Now)
+    timestamp = db.Column(db.DateTime, default=db.DateTime)
     # Fixme ,test timestamp db.DateTime.Now  看看能不能自动初始化这个值
 
     def __repr__(self):

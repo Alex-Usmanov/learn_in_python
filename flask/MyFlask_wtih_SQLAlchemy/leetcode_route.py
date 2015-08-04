@@ -2,14 +2,17 @@
 import flask
 from flask import Flask, request, render_template, redirect, url_for, flash, make_response
 from flask.ext.bootstrap import Bootstrap
-from flask.ext.sqlachmey import SQLAlchemy
+# from flask.ext.sqlachemy import SQLAlchemy
 from flask.ext.wtf import Form
-import user
-import problem
+# import user
+# import problem
+import db
+
+
 
 
 app = Flask(__name__)
-
+bootstrap = Bootstrap(app)
 
 @app.route('/')
 def index():
