@@ -153,7 +153,6 @@ def get_user_by_name(username):
     return user
 
 
-
 def load_user(user_id):
     user_data = User.query.filter(User.id == user_id)
     return user_data

@@ -112,7 +112,7 @@ def settings(name):
                 user_data.password = user_password['password']
                 db.session.update(user_data)  # FIXME 不知道怎样更新
 
-        return render_template('settings.html', username=name, action_url=url)
+        return render_template('settings.html', username=name, action_url=url, username=username)
     else:
         return redirect(url_for('/login'))
         # 必须是当前用户才可以修改密码,如果不是就要重新登陆
@@ -143,11 +143,9 @@ def problems():
             alchemy_db.save_problem(problem_data['title'], problems['detail'], user_id)
     problems_data = alchemy_db.load_ones_problems(user_id)
     # FIXME 这样子只能排列用户自己提出的问题，不能查看别人提出的问题，所以要修改alchemy_db.py 才可以
-    return render_template('problems_list.html', problems=problems_data)
+    return render_template('problems_list.html', problems=problems_data, username=username)
 
 
-# FIXME，这些都是没改好的。
-"""
 @app.route('/problems/<problem_id>', methods=['POST', 'GET'])
 def problem_subpage(problem_id):
     # def create_problem_page(problem_id):
@@ -176,7 +174,8 @@ def problem_subpage(problem_id):
     # FIXME, model 的内容不应该放到C 里面来搞  OK
     # 这里根本没必要知道这个数据库存在哪里
 
-
+# FIXME，这些都是没改好的。
+"""
 # 添加一个新用户
 # only admin can operate other users information
 @app.route('/settings/user/add', methods=['POST', 'GET'])
