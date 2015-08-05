@@ -6,12 +6,19 @@ from flask.ext.bootstrap import Bootstrap
 from flask.ext.wtf import Form
 # import user
 # import problem
-import Alchemy_db
-from Alchemy_db import db
+import alchemy_db
+from alchemy_db import db
 
 
 app = Flask(__name__)
 bootstrap = Bootstrap(app)
+
+DATABASE = 'sqlalchemy-demo.db'
+DEBUG = True
+SECRET_KEY = 'development key'
+# ENABlE_THREADS = True  # uwsgi默认不支持子线程
+
+app.config.from_object(__name__)
 
 
 @app.route('/')
@@ -35,7 +42,7 @@ def login():
         # print user
         # print user.id
         if user_id:
-            user = Alchemy_db.load_user(user_id)
+            user = alchemy_db.load_user(user_id)
             if user.password == userdata['password']:
                 flash(' 登陆成功。欢迎来玩~ ')
                 response = make_response(redirect(url_for('/problems')))
@@ -50,7 +57,6 @@ def login():
     return render_template('login.html')
 
 
-'''
 @app.route('/sign', methods=['POST', 'GET'])
 def sign():
     if request.method == 'POST':
@@ -58,72 +64,62 @@ def sign():
         print 'sign - userdata : ', userdata
         # user.save(userdata)
         # 把新注册用户写入数据库（在实际中，会利用js 在页面里过滤不合法的 用户名和密码，然后直接把数据放进去）
-        users =
-        for ur in users:
-            # if userdata['username'] == ur['name']:
-            if userdata['username'] == ur[1]:
-                flash(' User name already exists.')
-            if len(userdata['name']) <= 2:
-                flash(' User name should be more than 2 bytes. ')
-
-        if userdata['password1'] == userdata['password']:
-            del userdata['password1']
-            # 两个密码相同，只需要存一个好了，所以把另一个删掉
-            # FIXME ,存取数据，注意数据库
-            user.save(userdata)
-            flash('<h1> sign OK </h1>')
-            response = make_response(redirect(url_for('index')))
-            response.set_cookie('username', userdata['username'])
-            return response
+        if len(userdata['name']) < 3:
+            flash("用户名不能少于两字符。请重新输入。")
+            # elif db.get_user_id(userdata['name']):
+            flash("用户已存在，请重输入名字。")
+            # FIXME 'BaseQuery' object has no attribute 'id'
         else:
-            flash('前后密码不匹配，请重新输入密码')
+            if userdata['password'] != userdata['password1']:
+                flash("前后密码不一致，请重新输入密码。")
+            else:
+                del userdata['password1']
+                alchemy_db.save_user(userdata['name'], userdata['password'], userdata['email'])
+                flash("注册成功，自动跳转你的主页。")
+                response = make_response(redirect(url_for('problems')))
+                response.set_cookie('username', userdata['name'])
+                return response
     return render_template('sign.html')
-'''
+
+
+@app.route('/retrieve_password', methods=['POST', 'GET'])
+def retrieve_password():
+    if request.method == 'POST':
+        user_data = request.form.to_dict()
+        print 'retrieve_password , user_data: ', user_data
+        user = alchemy_db.get_user_by_name(user_data['name'])
+        # FIXME
+        if not user:
+            if user_data['email'] == user.email:
+                flash("(●'◡'●),已经将密码发到你注册的邮箱，请查收验证。")
+            else:
+                flash("咦？ 这个邮箱还没有注册耶~ .../n  (●'◡'●) come on ，baby  ❤ ~ ")
+    return render_template('retrieve_password.html')
+
 
 @app.route('/settings/<name>', methods=['POST', 'GET'])
 def settings(name):
     username = request.cookies.get('username')
     if username == name:
-        users_data = user.load()
+        user_data = alchemy_db.get_user_by_name(name)
+        # FIXME
         url = '/settings/' + str(name)
         if request.method == 'POST':
             user_password = request.form.to_dict()
             if user_password['password'] == user_password['password1']:
                 del user_password['password1']
-                for ur in users_data:
-                    # if ur['name'] == name:
-                    if ur[1] == name:
-                        # ur['password'] = user_passwords['password1']
-                        # user.cover(users_data)
-                        user.update(ur[0], user_password)
-                        return '<h1> 密码更改成功<h2>'
-                        # FIXME user
+
+                user_data.password = user_password['password']
+                db.session.update(user_data)  # FIXME 不知道怎样更新
+
         return render_template('settings.html', username=name, action_url=url)
     else:
         return redirect(url_for('/login'))
         # 必须是当前用户才可以修改密码,如果不是就要重新登陆
 
 
-@app.route('/retrieve_password', methods=['POST', 'GET'])
-def retrieve_password():
-    if request.method == 'POST':
-        user_email = request.form.to_dict()
-        print 'user_email: ', user_email
-        users = user.load()
-        for ur in users:
-            if ur[3] == user_email['email']:
-                # 发送用户和密码 送给 该邮箱
-                print ur['user_name'], ur['password']
-                # return "<h1> 你好, 已经将密码发到 " + user_email['email'] + "</h1>"
-                # UnicodeDecodeError: 'gbk' codec can't decode bytes in position 33-34: illegal multibyte sequence
-                return "<h1> OK~ ,已经将密码发到你注册的邮箱</h1>"
-        return "<h1> 咦？ 这个邮箱还没有注册耶~ ... <br>  come on ，baby  ❤ ~ </h1>"
-    return render_template('retrieve_password.html')
-
-
-# FIXME user
-
-
+# FIXME，这些都是没改好的。
+"""
 @app.route('/problems', methods=['POST', 'GET'])
 def problems():
     # redirect to login page if no cookie
@@ -277,7 +273,7 @@ def delete_user(id):
 def page_not_found():
     return "<h1>page not found</h1>",404
 '''
-
+"""
 if __name__ == '__main__':
     app.debug = True
     app.run()
