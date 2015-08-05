@@ -118,42 +118,36 @@ def settings(name):
         # 必须是当前用户才可以修改密码,如果不是就要重新登陆
 
 
-# FIXME，这些都是没改好的。
-"""
 @app.route('/problems', methods=['POST', 'GET'])
 def problems():
     # redirect to login page if no cookie
     username = request.cookies.get('username')
     if username is None:
-        # FIXME, 注意这个url_for的参数是这个文件中出现的函数名比如 def index 这个index
         return flask.redirect(flask.url_for('login'))
 
-    problems_data = problem.load()
-    problems_totality = len(problems_data)
+    user_id = alchemy_db.get_user_id(username)
+    # FIXME, user_id 取不出
 
     if request.method == 'POST':
         problem_data = request.form.to_dict()
-        problem_id = problems_totality + 1
-        problem_data['id'] = problem_id
-
         print "problem_data : ", problem_data
 
-        for pro in problems_data:
+        # FIXME，判定是否存在相同的标题题目，不过因为限制题目 unique 所以暂时忽略这个功能
+        '''for pro in problems_data:
             if pro['title'] == problem_data['title']:
-                return "<h1> 这个问题题目已经存在，请重新提问。</h1>"
-                # 应出现提示框 提醒才对
+                flash("<h1> 这个问题题目已经存在，请重新提问。</h1>")
+        '''
         if len(problem_data['title']) <= 2:
-            return "<h1>the title should more than 2 bytes </h1>"
+            flash("<h1>the title should more than 2 bytes </h1>")
         else:
-            problem_url = "/problems/" + str(problem_id)
-            problem_data['url'] = problem_url
-            problem.save(problem_data)
-
-    problems_data = problem.load()
-    # 重新加载一次，这样才能立刻显示出新添加的题目
+            alchemy_db.save_problem(problem_data['title'], problems['detail'], user_id)
+    problems_data = alchemy_db.load_ones_problems(user_id)
+    # FIXME 这样子只能排列用户自己提出的问题，不能查看别人提出的问题，所以要修改alchemy_db.py 才可以
     return render_template('problems_list.html', problems=problems_data)
 
 
+# FIXME，这些都是没改好的。
+"""
 @app.route('/problems/<problem_id>', methods=['POST', 'GET'])
 def problem_subpage(problem_id):
     # def create_problem_page(problem_id):

@@ -1,13 +1,24 @@
-<!doctype html>
+{% extends "layout.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
 
-<html>
-<head>
-    <meta charset="utf-8">
-    <title>题库</title>
-</head>
+{% block title %} 题库 {% endblock %}
 
-<body>
-<!-- view -->
+{% block headers %}
+{% if username %}
+<a href="./">主页</a>
+<a href="./problems"><strong>题库</strong></a>
+<a href="./settings/{{ username }}">设置</a>
+<a href="./login">退出</a>
+{% else %}
+<a href="./">目录</a>
+<a href="./login">登录</a>
+<a href="./sign">注册</a>
+<a href="./retrieve_password">找回密码</a>
+{% endif %}
+{% endblock %}
+
+
+{% block content %}
 <h1> Swimming in the Sea of Problems </h1>
 <hr>
 
@@ -26,7 +37,7 @@
     {% for problem in problems %}
     <tr>
         <td>{{ problem.id }}</td>
-        <td><a href={{ problem.url }}>{{ problem.title }}</a></td>
+        <td><a href='/problem/{{ problem.id }}'>{{ problem.title }}</a></td>
         {#
         <td>{{ problem.detail }}</td>
         #}
@@ -40,20 +51,19 @@
 
 <!-- add -->
 <form action="/problems" method="post">
-    <label for="problem_title">题目</label>
+
+    <label for="problem_title">问题标题</label>
     <input id="problem_title" type="text" size="50" name="title" required="required">
     <br>
     <br>
-    <label for="problem_detail">题目描述</label>
+    <label for="problem_detail">问题描述</label>
     <br>
     <textarea id="problem_detail" name="detail" cols="80" rows="10"></textarea>
     <br>
-    <label for="problem_creator">发布者</label>
-    <input id="problem_creator" name="creator">
     <br>
-
-    <button type="submit">post</button>
+    <button type="submit">提交问题</button>
 </form>
-</body>
-
-</html>
+<br>
+<hr>
+<h4> 爱提问题才不是问题儿童 ~ </h4>
+{% endblock %}
