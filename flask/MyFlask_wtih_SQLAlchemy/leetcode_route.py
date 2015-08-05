@@ -147,32 +147,22 @@ def problems():
 
 
 @app.route('/problems/<problem_id>', methods=['POST', 'GET'])
-def problem_subpage(problem_id):
-    # def create_problem_page(problem_id):
-    # FIXME， 这个函数名字取得太烂了，应该叫problem
-    # 另外id不对的时候应该abort(404)
-    # 树： 然而如果叫problem 就会和 problem.py 命名冲突
-    problems_data = problem.load()
-    if int(problem_id) > len(problems_data):
-        print len(problems_data)
-        return '<h1> 没有这道题 <h1>', 404
+def problem_id(problem_id):
+    username = request.cookies.get('username')
+    if int(problem_id) > alchemy_db.Problem.__tablename__.count('id'):
+        return '<h1> 你跑到了海洋的虫洞里了。 <h1>', 404
+        # 另外id不对的时候应该abort(404)
+    problem_data = alchemy_db.load_problem(problem_id)
+    candidate_id = alchemy_db.get_user_id(username)
 
-    problem_data = problems_data[int(problem_id) - 1]
-    # 如果不 problem_id -1，每次post 后，显示的是下一题的页面（感觉可以有妙用
-    ''' 如果id 并不是自动生成排序，就要这样子判断存取了
-    for pro in problems_data:
-        if pro['id'] == problem_id:
-            problem_data = pro
-            # break
-    '''
     if request.method == 'POST':
         solution_data = request.form.to_dict()
-        solution_data["problem_id"] = problem_id
-        problem.save_solution_db_file(problem_id, solution_data)
-    solutions_data = problem.load_solution_db_file(problem_id)
+        alchemy_db.save_solution(problem_id, solution_data['detail'], candidate_id)
+
+    solutions_data = alchemy_db.load_one_solutions(candidate_id)
+    # FIXME,这里只能查看用户自己的答案，不能查看其他人的，需要修改
     return render_template('problem_id.html', id=problem_id, problem=problem_data, solutions=solutions_data)
-    # FIXME, model 的内容不应该放到C 里面来搞  OK
-    # 这里根本没必要知道这个数据库存在哪里
+
 
 # FIXME，这些都是没改好的。
 """

@@ -1,7 +1,7 @@
 {% extends "layout.html" %}
 {% import "bootstrap/wtf.html" as wtf %}
 
-{% block title %} 第 {{ problem.id }} 题 {% endblock %}
+{% block title %} 第 {{ id }} 题 {% endblock %}
 
 {% block headers %}
 {% if username %}
@@ -41,16 +41,15 @@
 
 <!-- add -->
 <form action={{ problem.url }} method="post">
-    <label for="solution_creator">答题者</label>
-    <input id="solution_creator" type="text" size="50" name="creator" required="required">
+    <h5> {{ username }} </h5>
     <br>
     <br>
-    <label for="solution_detail">你的答案</label>
+    <label for="solution_detail">答案</label>
     <br>
     <textarea id="solution_detail" name="detail" cols="80" rows="10"></textarea>
     <br>
     <br>
-    <button type="submit">post</button>
+    <button type="submit">提交</button>
 </form>
 </body>
 
