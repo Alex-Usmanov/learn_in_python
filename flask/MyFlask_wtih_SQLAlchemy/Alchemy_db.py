@@ -28,11 +28,11 @@ class User(db.Model):
     # 属性1= name ,字符长度100以内
     password = db.Column(db.String(20))
     email = db.Column(db.String(50))
-    timestamp = db.Column(db.DateTime, default=db.DateTime)
+    # timestamp = db.Column(db.DateTime, default=db.DateTime)
     # Fixme ,test timestamp db.DateTime.Now  看看能不能自动初始化这个值
 
     def __repr__(self):
-        return "%d -  %s ： %s , %s  ,  %s" % (self.id, self.name, self.password, self.email, str(self.timestamp))
+        return "%d -  %s ： %s , %s " % (self.id, self.name, self.password, self.email)
         # 返回具有可读性的字符串来表示模型，调试和测试可以使用
 
 
@@ -97,11 +97,11 @@ def save_user(name, password, email, problems_id=None, solutions_id=None):
     # 传值，实例人员
     db.session.add(user)
     # 通过数据库会话管理对数据库所做的改动，准备把对象写入数据库之前，先要将其添加到会话中：
-    if not problems_id:
+    if problems_id:
         for i in problems_id:
             problems = Problem(id=i, create_id=user.id)
             db.session.add(problems)
-    if not solutions_id:
+    if solutions_id:
         for k in solutions_id:
             solutions = Solution(id=k, candidate_id=user.id)
             db.session.add(solutions)
@@ -136,7 +136,7 @@ def save_solution(solution_record):
 
 
 def save_solution(solution_id, detail, candidate_id):
-    solution = Solution(id=solution_id, detail=detail, candidat_ide=candidate_id)
+    solution = Solution(id=solution_id, detail=detail, candidate_id=candidate_id)
     db.session.add(solution)
     db.session.commit()
 
@@ -144,6 +144,14 @@ def save_solution(solution_id, detail, candidate_id):
 def get_user_id(username):
     user = User.query.filter(User.name == username)
     return user.id
+
+
+# Fixme , returns 'BaseQuery' object has no attribute 'id'
+
+def get_user_by_name(username):
+    user = User.query.filter(User.name == username)
+    return user
+
 
 
 def load_user(user_id):
@@ -162,7 +170,7 @@ def load_solution(solution_id):
 
 
 def load_ones_problems(user_id):
-    problems = Problem.query(Problem.id, Problem.title, Problem.detail).join(User).filter(
+    problems = db.session.query(Problem.id, Problem.title, Problem.detail).join(User).filter(
         Problem.creator_id == user_id).group_by(Problem.id)
     return problems
 
@@ -173,6 +181,14 @@ def load_one_solutions(user_id):
                          Problem.solution_id == Solution.id).group_by(Solution.id)
 
     return solutions
+
+
+def main():
+    print 'Dropping all...'
+    db.drop_all()
+    # 粗暴地删掉数据库
+    print 'Creating all...'
+    db.create_all()
 
 
 def test_user():
@@ -194,4 +210,5 @@ def test_all():
 
 
 if __name__ == '__main__':
+    main()
     test_all()

@@ -6,7 +6,8 @@ from flask.ext.bootstrap import Bootstrap
 from flask.ext.wtf import Form
 # import user
 # import problem
-import db
+import Alchemy_db
+from Alchemy_db import db
 
 
 app = Flask(__name__)
@@ -26,27 +27,30 @@ def login():
         userdata = request.form.to_dict()
         # 载入数据库，遍历对比登录信息，当然，这个过程应该写成一个函数放到user.py里，这里就会清爽干净很多
         print 'login - userdata : ', userdata
-        # FIXME 这里可以调试debug 的时候看看有没有正确把login 里面的用户信息传送进来
-        users = user.load()
-        for ur in users:
-            # if userdata['name'] == ur["name"] and userdata['password']== ur['password']:
-            if ur[1] == userdata['name']:
-                if ur[2] == userdata['password']:
-                    flash("login ok.\(^o^)/")
-                    # set cookies
-                    # response = flask.make_response(flask.redirect(flask.url_for('problems')))
-                    # response.set_cookie('username', ur['name'])
-                    response = flask.make_response(flask.redirect(flask.url_for('index')))
-                    response.set_cookie('username', ur[1])
-                    return response
-        else:
-            print ur[1], userdata['name']
-            flash('password is not suit for the username.')
-            # return '<h1> password is not suit for the username. </h1>'
 
+        user_id = db.get_user_id(userdata['name'])
+        # user=Alchemy_db.get_user_by_name('dodoru')
+        # FIXME 'BaseQuery' object has no attribute 'id'
+        # user_id=user.id
+        # print user
+        # print user.id
+        if user_id:
+            user = Alchemy_db.load_user(user_id)
+            if user.password == userdata['password']:
+                flash(' 登陆成功。欢迎来玩~ ')
+                response = make_response(redirect(url_for('/problems')))
+                response.set_cookie('username', userdata['name'])
+                return response
+            else:
+                flash('密码错误，请重新登录。')
+                return render_template('login.html')
+        else:
+            flash('该用户不存在，请注册。')
+            return redirect(url_for('sign'))
     return render_template('login.html')
 
 
+'''
 @app.route('/sign', methods=['POST', 'GET'])
 def sign():
     if request.method == 'POST':
@@ -54,7 +58,7 @@ def sign():
         print 'sign - userdata : ', userdata
         # user.save(userdata)
         # 把新注册用户写入数据库（在实际中，会利用js 在页面里过滤不合法的 用户名和密码，然后直接把数据放进去）
-        users = user.load()
+        users =
         for ur in users:
             # if userdata['username'] == ur['name']:
             if userdata['username'] == ur[1]:
@@ -74,7 +78,7 @@ def sign():
         else:
             flash('前后密码不匹配，请重新输入密码')
     return render_template('sign.html')
-
+'''
 
 @app.route('/settings/<name>', methods=['POST', 'GET'])
 def settings(name):

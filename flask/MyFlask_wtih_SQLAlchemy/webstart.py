@@ -145,6 +145,10 @@ def career_history(name):
         .filter(Person.name == name).group_by(Company.name)
     # 限定人名，通过联合 Job 模型 和 Person 模型，找到某人的工作单位，并且按字母排列。
 
+    print jobs
+    print titles
+    print employers
+
     return render_template('career_history.html', name=name, jobs=jobs,
                            titles=titles, employers=employers)
     # 把所有查询到的个人资料都放到这个人的简历模板里去
@@ -170,3 +174,32 @@ def main():
 if __name__ == '__main__':
     main()
 
+'''
+# templates/career_history.html
+
+<html>
+<body>
+<h1>LinkedIn 0.0.0.0.0.0.1</h1>
+<h2>Work History for <em>{{name}}</em>:</h2>
+
+<h3>Jobs ({{jobs.count()}}):</h3>
+<!-- <h4>{{jobs}}</h4> -->
+<ol>{%for job in jobs%}
+    <li>{{job.title}} at {{job.employer.name}}</li>
+{%endfor%}</ol>
+
+
+<h3>Titles ({{titles.count()}}):</h3>
+<ol>{%for title in titles%}
+	<li>{{title[0]}}</li>
+{%endfor%}</ol>
+
+<h3>Employers ({{employers.count()}}):</h3>
+<ol>{%for employer, num_jobs in employers%}
+	<li>{{employer}} ({{num_jobs}} jobs)</li>
+{%endfor%}</ol>
+
+</body>
+</html>
+
+'''
