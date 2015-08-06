@@ -18,8 +18,11 @@ app.config.from_object(__name__)
 
 @app.route('/')
 def index():
-    todos = todo.Todo.query.all()
-    return render_template('index.html', todos=todos)
+    user_id = request.cookies.get('user_id')
+    todos = todo.Todo()
+    if user_id:
+        todos = todo.Todo.query.filter_by(user_id=int(user_id)).all()
+    return render_template('index.html', user_id=user_id, todos=todos)
 
 
 @app.route('/sign', methods=['POST', 'GET'])
@@ -29,8 +32,6 @@ def sign():
         print "sign  userdata : ", userdata
         if len(userdata['username']) < 3:
             flash("the length of username should be more than 2 bytes. please rename.")
-        # elif todo.User.query.filter(username=userdata['username']):
-        # flash("this username has been existed , please rename")
         elif userdata['password'] != userdata['password1']:
             flash(" Your passwords are different ,please input again.")
         else:
@@ -40,11 +41,36 @@ def sign():
             todo.db.session.commit()
             flash("you have sign in the TODO , now we will jump to your home page...")
             print newUser
+            print newUser.id
 
             response = make_response(redirect(url_for('index')))
-            response.set_cookie('user_id', newUser.id)
+            response.set_cookie('user_id', str(newUser.id))
             return response
     return render_template('sign.html')
+
+
+@app.route('/logout', methods=['POST', 'GET'])
+def logout():
+    print "log out id : ", request.cookies.get("user_id")
+    # request.cookies.pop('user_id',None)
+    request.cookies.pop('user_id', None)
+    # FIXME TypeError: 'ImmutableTypeConversionDict' objects are immutable
+    flash(' you have logged out ')
+    return redirect(url_for('index'))
+
+
+@app.route('/login', methods=['POST', 'GET'])
+def login():
+    if request.method == 'POST':
+        user_data = request.form.to_dict()
+        user = todo.User.query.filter_by(username=user_data['username'])
+        if user.password == user_data['password']:
+            # FIXME AttributeError: 'BaseQuery' object has no attribute 'password'
+            flash('log in successful.')
+            response = make_response(redirect(url_for('index')))
+            response.set_cookie('user_id', user.id)
+            return response
+    return render_template('login.html')
 
 
 @app.route('/add/', methods=['POST'])
