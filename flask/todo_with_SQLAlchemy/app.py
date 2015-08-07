@@ -7,6 +7,7 @@ from flask import url_for
 from flask import make_response
 
 import todo
+from todo import Todo, User, db
 
 
 app = Flask(__name__)
@@ -19,9 +20,9 @@ app.config.from_object(__name__)
 @app.route('/')
 def index():
     user_id = request.cookies.get('user_id')
-    todos = todo.Todo()
+    todos = None
     if user_id:
-        todos = todo.Todo.query.filter_by(user_id=int(user_id)).all()
+        todos = Todo.query.filter(Todo.user_id == int(user_id)).all()
     return render_template('index.html', user_id=user_id, todos=todos)
 
 
@@ -36,7 +37,7 @@ def sign():
             flash(" Your passwords are different ,please input again.")
         else:
             # since all the conditions are suitable, we can create a new user now.
-            newUser = todo.User(username=userdata['username'], password=userdata['password'], email=userdata['email'])
+            newUser = User(username=userdata['username'], password=userdata['password'], email=userdata['email'])
             todo.db.session.add(newUser)
             todo.db.session.commit()
             flash("you have sign in the TODO , now we will jump to your home page...")
@@ -63,9 +64,12 @@ def logout():
 def login():
     if request.method == 'POST':
         user_data = request.form.to_dict()
-        user = todo.User.query.filter_by(username=user_data['username'])
+        user = User.query.filter(User.username == user_data['username']).all()
+        print user
+
         if user.password == user_data['password']:
             # FIXME AttributeError: 'BaseQuery' object has no attribute 'password'
+
             flash('log in successful.')
             response = make_response(redirect(url_for('index')))
             response.set_cookie('user_id', user.id)
@@ -75,9 +79,11 @@ def login():
 
 @app.route('/add/', methods=['POST'])
 def add():
+    user_id = request.cookies.get('user_id')
+
     t = request.form['todo']
     # use unicode(), not str(), for Chinese chars
-    newTodo = todo.Todo(task=unicode(t))
+    newTodo = todo.Todo(task=unicode(t), user_id=int(user_id))
     todo.db.session.add(newTodo)
     todo.db.session.commit()
 
@@ -86,10 +92,13 @@ def add():
 
 @app.route('/delete/<todo_id>/')
 def delete(todo_id):
+    user_id = request.cookies.get('user_id')
     t = todo.Todo.query.get(int(todo_id))
-    todo.db.session.delete(t)
-    todo.db.session.commit()
-
+    if t.user_id == int(user_id):
+        todo.db.session.delete(t)
+        todo.db.session.commit()
+    else:
+        flash("sorry, you can't delete others' task... ")
     return redirect(url_for('index'))
 
 
