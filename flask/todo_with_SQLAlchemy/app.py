@@ -68,12 +68,11 @@ def login():
     if request.method == 'POST':
         user_data = request.form.to_dict()
         print user_data
-        query = {'username': user_data.get('username')}
         print user_data.get('username')
+        # query = {'username': user_data.get('username')}
         # user=User.query.filter(**query).first()
         # filter() got an unexpected keyword argument 'username'
         # TypeError: filter() got an unexpected keyword argument 'username'
-
         user = User.query.filter(User.username == user_data['username']).first()
         # if all(), it will throw AttributeError: 'BaseQuery' object has no attribute 'password'
         if user:
