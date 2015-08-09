@@ -29,18 +29,20 @@
 <br>
 <br>
 <hr color="111">
+
 {% if solutions %}
 {% for solution in solutions %}
-<p>{{ solution.creator }}</p>
+<p>{{ solution.candidate }}</p>
 <article>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ solution.detail }}</article>
 <hr>
 {% endfor %}
 {% endif %}
+
 <h3> come on,baby ♥ ~ create your solution </h3>
 <br>
 
 <!-- add -->
-<form action={{ problem.url }} method="post">
+<form action="/problems/{{ problem.id }}" method="post">
     <h5> {{ username }} </h5>
     <br>
     <br>

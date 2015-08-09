@@ -4,79 +4,70 @@ A single page app exmploring how to use SQLAlchemy & Flask.
 """
 
 import os, pdb
-from sqlalchemy import distinct, func
+from sqlalchemy import sql
 from sqlalchemy.orm import scoped_session, sessionmaker
 from flask.ext.sqlalchemy import SQLAlchemy
 from flask import Flask, render_template
 
 app = Flask(__name__)
+app.secret_key = 'secret key'
 app.debug = False
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///sqlalchemy-demo.db'
 # 程序使用的数据库 URL 必须保存到 Flask 配置对象的 SQLALCHEMY_DATABASE_URI 键中
 db = SQLAlchemy(app)
-# db 对象是 SQLAlchemy 类的实例，表示程序使用的数据库，同时获得 Flask-SQLAlchemy提供的所有功能
 
-# 定义模型,一般是类，属性对应数据库表中的列
 
 class User(db.Model):
-    # db.Model 是基类，定义User 模型
     __tablename__ = 'users'
-    # 表名 为 ‘users’，其余类变量为模型的属性（db.Column 类的实例）
     id = db.Column(db.Integer, primary_key=True)
-    # 主键，一般为id
     name = db.Column(db.String(50), unique=True, nullable=False)
-    # 属性1= name ,字符长度100以内
     password = db.Column(db.String(20))
     email = db.Column(db.String(50))
-    # timestamp = db.Column(db.DateTime, default=db.DateTime)
-    # Fixme ,test timestamp db.DateTime.Now  看看能不能自动初始化这个值
+    timestamp = db.Column(db.DateTime(timezone=True), default=sql.func.now())
+    # set default time
 
     def __repr__(self):
-        return "%d -  %s ： %s , %s " % (self.id, self.name, self.password, self.email)
-        # 返回具有可读性的字符串来表示模型，调试和测试可以使用
+        return u"< User {0} , {1}, {2} ,{3}>".format(self.id, self.name, self.email, self.timestamp)
 
 
 class Problem(db.Model):
-    # 定义 Job 模型
     __tablename__ = 'problems'
-    # 表名为‘problems’
     id = db.Column(db.Integer, primary_key=True)
-    # 主键id
     title = db.Column(db.String(200))
     detail = db.Column(db.String(1000))
-
-    # 属性1=title, 字符长度200以内
     creator_id = db.Column(db.Integer, db.ForeignKey('users.id'))
-    # 属性2=creator_name ,因为name 在 people 是 unique，所以是外键
-    #
     creator = db.relationship('User', backref='problems')
-    # 关系 ，一对多，向另一端Person模型添加一个 problems 的属性，可以访问Problem模型，返回模型对象，而不是外键
     solution_id = db.Column(db.Integer, db.ForeignKey('solutions.id'))
-    # 属性3=solution_id,来自Solution模型的外键,用来查询答卷位置
     # FIXME ,怎样才可以让默认 每个Solution.id == Prolblem.id ?
     solution = db.relationship('Solution', backref='problem')
-    # 关系，一对多，向另一端的Solution模型添加一个problem的属性，可以用来查询它的题目
+
     def __repr__(self):
-        return "%d - %s : %s by %s" % (self.id, self.title, self.detail, str(self.creator_name))
-        # 返回具有可读性的字符串来表示模型，调试和测试可以使用
+        return u"< Problem {0}, {1}, cid : {2}, sid : {3}>".format(self.id, self.title, self.creator_id,
+                                                                   self.solution_id)
 
 
 class Solution(db.Model):
-    # 定义Company 模型
     __tablename__ = 'solutions'
-    # 表名为companies
     id = db.Column(db.Integer, primary_key=True)
-    # 主键 id
     detail = db.Column(db.String(2000))
-    # score=db.Column(db.Integer,default=0)
+    score = db.Column(db.Integer, default=0)
     candidate_id = db.Column(db.String(50), db.ForeignKey('users.id'))
     candidate = db.relationship('User', backref='solutions')
 
     def __repr__(self):
-        return self.detail
-        # 返回具有可读性的字符串来表示模型，调试和测试可以使用
+        return u"< Solution {0} , {1}, {2} ,{3}>".format(self.id, self.detail, self.score, self.candidate_id)
 
 
+
+if __name__ == '__main__':
+    db.drop_all()
+    db.create_all()
+    print('rebuild database')
+
+'''
+
+# the following save()s and load()s clumsily imitate the  save() and load() in the origin db.py
+# please ignore them and take it as a funny joke :D
 def save(Object, dict):
     # Object =Person,Problem,Solution,FIXME ,it is wrong
     temp = Object
@@ -86,17 +77,9 @@ def save(Object, dict):
     db.commit()
     return temp
 
-
-def load():
-    pass
-
-
 def save_user(name, password, email, problems_id=None, solutions_id=None):
-    # 定义一个初始化人的信息和履历的数据表 模式
     user = User(name=name, password=password, email=email)
-    # 传值，实例人员
     db.session.add(user)
-    # 通过数据库会话管理对数据库所做的改动，准备把对象写入数据库之前，先要将其添加到会话中：
     if problems_id:
         for i in problems_id:
             problems = Problem(id=i, create_id=user.id)
@@ -106,16 +89,6 @@ def save_user(name, password, email, problems_id=None, solutions_id=None):
             solutions = Solution(id=k, candidate_id=user.id)
             db.session.add(solutions)
     db.session.commit()
-    # 提交会话，把对象写入数据库
-
-
-'''
-def save_problem(problem_record):
-    for title, detail, create_id, solution_id in problem_record:
-        problem = Problem(title=title, detail=detail, create_id=create_id, solution_id=solution_id)
-        db.session.add(problem)
-    db.session.commit()
-'''
 
 
 def save_problem(title, detail, creator_id):
@@ -124,15 +97,6 @@ def save_problem(title, detail, creator_id):
     db.session.add(problem)
     # db.session.add(solution)
     db.session.commit()
-
-
-'''
-def save_solution(solution_record):
-    for detail, candidate_id in solution_record:
-        solution = Solution(detail=detail, candidat_ide=candidate_id)
-        db.session.add(solution)
-    db.session.commit()
-'''
 
 
 def save_solution(solution_id, detail, candidate_id):
@@ -145,8 +109,6 @@ def get_user_id(username):
     user = User.query.filter(User.name == username)
     return user.id
 
-
-# Fixme , returns 'BaseQuery' object has no attribute 'id'
 
 def get_user_by_name(username):
     user = User.query.filter(User.name == username)
@@ -178,7 +140,6 @@ def load_one_solutions(user_id):
     solutions = db.session.query(Solution.id, Problem.title, Solution.detail, User.name).join(Problem).join(User).join(
         Solution).filter(User.id == user_id, Solution.candidate_id == user_id,
                          Problem.solution_id == Solution.id).group_by(Solution.id)
-
     return solutions
 
 
@@ -205,9 +166,5 @@ def test_all():
     print load_problem(2)
     print load_user(2)
     print load_solution(1)
-    print load_solution(2)
 
-
-if __name__ == '__main__':
-    main()
-    test_all()
+    '''

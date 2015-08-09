@@ -2,12 +2,8 @@
 import flask
 from flask import Flask, request, render_template, redirect, url_for, flash, make_response
 from flask.ext.bootstrap import Bootstrap
-# from flask.ext.sqlachemy import SQLAlchemy
 from flask.ext.wtf import Form
-# import user
-# import problem
-import alchemy_db
-from alchemy_db import db
+from alchemy_db import User, Problem, Solution, db
 
 
 app = Flask(__name__)
@@ -35,18 +31,18 @@ def login():
         # 载入数据库，遍历对比登录信息，当然，这个过程应该写成一个函数放到user.py里，这里就会清爽干净很多
         print 'login - userdata : ', userdata
 
-        user_id = db.get_user_id(userdata['name'])
+        # user_id = db.get_user_id(userdata['name'])
+        user = User.query.filter(User.name == userdata['name']).first()
         # user=Alchemy_db.get_user_by_name('dodoru')
         # FIXME 'BaseQuery' object has no attribute 'id'
         # user_id=user.id
-        # print user
+        print user
         # print user.id
-        if user_id:
-            user = alchemy_db.load_user(user_id)
+        if user:
             if user.password == userdata['password']:
                 flash(' 登陆成功。欢迎来玩~ ')
-                response = make_response(redirect(url_for('/problems')))
-                response.set_cookie('username', userdata['name'])
+                response = make_response(redirect(url_for('problems')))
+                response.set_cookie('user_id', str(user.id))
                 return response
             else:
                 flash('密码错误，请重新登录。')
@@ -62,106 +58,109 @@ def sign():
     if request.method == 'POST':
         userdata = request.form.to_dict()
         print 'sign - userdata : ', userdata
-        # user.save(userdata)
-        # 把新注册用户写入数据库（在实际中，会利用js 在页面里过滤不合法的 用户名和密码，然后直接把数据放进去）
         if len(userdata['name']) < 3:
-            flash("用户名不能少于两字符。请重新输入。")
-            # elif db.get_user_id(userdata['name']):
-            flash("用户已存在，请重输入名字。")
-            # FIXME 'BaseQuery' object has no attribute 'id'
+            flash(" The length of username should be more than 2 bytes. please input again.")
+        elif userdata['password'] != userdata['password1']:
+            flash(" Your passwords are different, please input again.")
         else:
-            if userdata['password'] != userdata['password1']:
-                flash("前后密码不一致，请重新输入密码。")
-            else:
-                del userdata['password1']
-                alchemy_db.save_user(userdata['name'], userdata['password'], userdata['email'])
-                flash("注册成功，自动跳转你的主页。")
-                response = make_response(redirect(url_for('problems')))
-                response.set_cookie('username', userdata['name'])
-                return response
+            new_user = User(name=userdata['name'], password=userdata['password'], email=userdata['email'])
+            db.session.add(new_user)
+            try:
+                db.session.commit()
+            except:
+                db.session.rollback()
+            flash("Sign Successfully，jump to your home page now.")
+
+            response = make_response(redirect(url_for('problems')))
+            response.set_cookie('user_id', str(new_user.id))
+            return response
     return render_template('sign.html')
 
 
 @app.route('/retrieve_password', methods=['POST', 'GET'])
 def retrieve_password():
     if request.method == 'POST':
+        # user_id=request.cookies.get('user_id')
         user_data = request.form.to_dict()
         print 'retrieve_password , user_data: ', user_data
-        user = alchemy_db.get_user_by_name(user_data['name'])
-        # FIXME
-        if not user:
-            if user_data['email'] == user.email:
-                flash("(●'◡'●),已经将密码发到你注册的邮箱，请查收验证。")
-            else:
-                flash("咦？ 这个邮箱还没有注册耶~ .../n  (●'◡'●) come on ，baby  ❤ ~ ")
+        # user = alchemy_db.get_user_by_name(user_data['name'])
+        user = User.query.filter(User.name == user_data['name'], User.email == user_data['email']).first()
+        print user
+        if user:
+            flash("(●'◡'●),已经将密码发到你注册的邮箱，请查收验证。")
+        else:
+            flash("咦？ 这个邮箱还没有注册耶~ .../n  (●'◡'●) come on ，baby  ❤ ~ ")
     return render_template('retrieve_password.html')
 
 
 @app.route('/settings/<name>', methods=['POST', 'GET'])
 def settings(name):
-    username = request.cookies.get('username')
-    if username == name:
-        user_data = alchemy_db.get_user_by_name(name)
-        # FIXME
+    user_id = request.cookies.get('user_id')
+    user = User.query.get(int(user_id))
+    if user.name == name:
         url = '/settings/' + str(name)
         if request.method == 'POST':
             user_password = request.form.to_dict()
             if user_password['password'] == user_password['password1']:
-                del user_password['password1']
-
-                user_data.password = user_password['password']
-                db.session.update(user_data)  # FIXME 不知道怎样更新
-
-        return render_template('settings.html', username=name, action_url=url, username=username)
+                user.password = user_password['password']
+                db.session.add(user)
+                db.session.commit()
+                flash('you have reset your password .')
+        return render_template('settings.html', username=name, action_url=url)
     else:
-        return redirect(url_for('/login'))
+        return redirect(url_for('login'))
         # 必须是当前用户才可以修改密码,如果不是就要重新登陆
 
 
 @app.route('/problems', methods=['POST', 'GET'])
 def problems():
     # redirect to login page if no cookie
-    username = request.cookies.get('username')
-    if username is None:
+    user_id = request.cookies.get('user_id')
+    if not user_id:
         return flask.redirect(flask.url_for('login'))
 
-    user_id = alchemy_db.get_user_id(username)
-    # FIXME, user_id 取不出
-
+    user = User.query.get(int(user_id))
+    print user
     if request.method == 'POST':
         problem_data = request.form.to_dict()
         print "problem_data : ", problem_data
-
-        # FIXME，判定是否存在相同的标题题目，不过因为限制题目 unique 所以暂时忽略这个功能
-        '''for pro in problems_data:
-            if pro['title'] == problem_data['title']:
-                flash("<h1> 这个问题题目已经存在，请重新提问。</h1>")
-        '''
         if len(problem_data['title']) <= 2:
             flash("<h1>the title should more than 2 bytes </h1>")
         else:
-            alchemy_db.save_problem(problem_data['title'], problems['detail'], user_id)
-    problems_data = alchemy_db.load_ones_problems(user_id)
-    # FIXME 这样子只能排列用户自己提出的问题，不能查看别人提出的问题，所以要修改alchemy_db.py 才可以
-    return render_template('problems_list.html', problems=problems_data, username=username)
+            new_problem = Problem(title=problem_data['title'], detail=problem_data['detail'], creator_id=user_id)
+            db.session.add(new_problem)
+            try:
+                db.session.commit()
+            except:
+                db.session.rollback()
+    problems_data = Problem.query.all()
+    return render_template('problems_list.html', problems=problems_data, username=user.name)
 
 
 @app.route('/problems/<problem_id>', methods=['POST', 'GET'])
 def problem_id(problem_id):
-    username = request.cookies.get('username')
-    if int(problem_id) > alchemy_db.Problem.__tablename__.count('id'):
+    user_id = request.cookies.get('user_id')
+    problem_data = Problem.query.get(int(problem_id))
+
+    print problem_data
+    if not problem_data:
         return '<h1> 你跑到了海洋的虫洞里了。 <h1>', 404
-        # 另外id不对的时候应该abort(404)
-    problem_data = alchemy_db.load_problem(problem_id)
-    candidate_id = alchemy_db.get_user_id(username)
 
     if request.method == 'POST':
         solution_data = request.form.to_dict()
-        alchemy_db.save_solution(problem_id, solution_data['detail'], candidate_id)
+        new_solution = Solution(detail=solution_data['detail'], candidate_id=user_id, problem=problem_data)
+        db.session.add(new_solution)
+        db.session.commit()
 
-    solutions_data = alchemy_db.load_one_solutions(candidate_id)
-    # FIXME,这里只能查看用户自己的答案，不能查看其他人的，需要修改
-    return render_template('problem_id.html', id=problem_id, problem=problem_data, solutions=solutions_data)
+    # solutions_data=Solution.query.filter(Solution.problem==int(problem_id)).all()
+    # print solutions_data
+    solutions_data = None
+
+    if problem_data.solution_id:
+        solutions_data = Problem.query(Problem.solution).filter(Problem.id == int(problem_id)).all()
+        asolutions_data = Solution.query.get(problem_data.solution_id)
+    print solutions_data
+    return render_template('problem_id.html', problem=problem_data, solutions=solutions_data)
 
 
 # FIXME，这些都是没改好的。
@@ -257,6 +256,7 @@ def page_not_found():
     return "<h1>page not found</h1>",404
 '''
 """
+
 if __name__ == '__main__':
     app.debug = True
     app.run()
