@@ -31,11 +31,7 @@ def login():
         # 载入数据库，遍历对比登录信息，当然，这个过程应该写成一个函数放到user.py里，这里就会清爽干净很多
         print 'login - userdata : ', userdata
 
-        # user_id = db.get_user_id(userdata['name'])
         user = User.query.filter(User.name == userdata['name']).first()
-        # user=Alchemy_db.get_user_by_name('dodoru')
-        # FIXME 'BaseQuery' object has no attribute 'id'
-        # user_id=user.id
         print user
         # print user.id
         if user:
@@ -106,6 +102,7 @@ def settings(name):
                 db.session.add(user)
                 db.session.commit()
                 flash('you have reset your password .')
+                return '<h2> you have reset your password .</h2> '
         return render_template('settings.html', username=name, action_url=url)
     else:
         return redirect(url_for('login'))
@@ -148,17 +145,13 @@ def problem_id(problem_id):
 
     if request.method == 'POST':
         solution_data = request.form.to_dict()
-        new_solution = Solution(detail=solution_data['detail'], candidate_id=user_id, problem=problem_data)
+        new_solution = Solution(detail=solution_data['detail'], candidate_id=user_id, problem_id=int(problem_id))
         db.session.add(new_solution)
         db.session.commit()
 
     # solutions_data=Solution.query.filter(Solution.problem==int(problem_id)).all()
     # print solutions_data
-    solutions_data = None
-
-    if problem_data.solution_id:
-        solutions_data = Problem.query(Problem.solution).filter(Problem.id == int(problem_id)).all()
-        asolutions_data = Solution.query.get(problem_data.solution_id)
+    solutions_data = Solution.query.filter(Solution.problem_id == int(problem_id)).all()
     print solutions_data
     return render_template('problem_id.html', problem=problem_data, solutions=solutions_data)
 
