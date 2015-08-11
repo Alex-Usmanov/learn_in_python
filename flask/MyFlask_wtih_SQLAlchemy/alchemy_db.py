@@ -27,7 +27,8 @@ class User(db.Model):
     # set default time
 
     def __repr__(self):
-        return u"< User {0} , {1}, {2} ,{3}>".format(self.id, self.name, self.email, self.timestamp)
+        return u"< {0} , {1} >".format(self.name, self.email)
+        # return u"< User {0} , {1}, {2} ,{3}>".format(self.id, self.name, self.email, self.timestamp)
 
 
 class Problem(db.Model):
@@ -37,13 +38,12 @@ class Problem(db.Model):
     detail = db.Column(db.String(1000))
     creator_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     creator = db.relationship('User', backref='problems')
-    solution_id = db.Column(db.Integer, db.ForeignKey('solutions.id'))
-    # FIXME ,怎样才可以让默认 每个Solution.id == Prolblem.id ?
-    solution = db.relationship('Solution', backref='problem')
+    # solution_id = db.Column(db.Integer, db.ForeignKey('solutions.id'))
+    # solution = db.relationship('Solution', backref='problem')
+    #
 
     def __repr__(self):
-        return u"< Problem {0}, {1}, cid : {2}, sid : {3}>".format(self.id, self.title, self.creator_id,
-                                                                   self.solution_id)
+        return u"< Problem {0}, {1}, cid : {2}>".format(self.id, self.title, self.creator_id)
 
 
 class Solution(db.Model):
@@ -53,9 +53,11 @@ class Solution(db.Model):
     score = db.Column(db.Integer, default=0)
     candidate_id = db.Column(db.String(50), db.ForeignKey('users.id'))
     candidate = db.relationship('User', backref='solutions')
+    problem_id = db.Column(db.Integer, db.ForeignKey('problems.id'))
+    problem = db.relationship('Problem', backref='solutions')
 
     def __repr__(self):
-        return u"< Solution {0} , {1}, {2} ,{3}>".format(self.id, self.detail, self.score, self.candidate_id)
+        return u"< Solution {0} , {1}, {2} ,{3} >".format(self.id, self.detail, self.candidate_id, self.problem_id)
 
 
 
